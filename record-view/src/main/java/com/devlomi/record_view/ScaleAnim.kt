@@ -8,7 +8,7 @@ import android.view.animation.AccelerateDecelerateInterpolator
 /**
  * Created by Devlomi on 13/12/2017.
  */
-class ScaleAnim(private val view: View?) {
+class ScaleAnim(private val view: View) {
     private var scaleUpTo = 2.0f
 
     fun setScaleUpTo(scaleUpTo: Float) {
@@ -22,7 +22,7 @@ class ScaleAnim(private val view: View?) {
         val scaleX = ObjectAnimator.ofFloat(view, "scaleX", scaleUpTo)
 
         set.setDuration(150)
-        set.setInterpolator(AccelerateDecelerateInterpolator())
+        set.interpolator = AccelerateDecelerateInterpolator()
         set.playTogether(scaleY, scaleX)
         set.start()
     }
@@ -34,7 +34,7 @@ class ScaleAnim(private val view: View?) {
         val scaleX = ObjectAnimator.ofFloat(view, "scaleX", 1.0f)
 
         set.setDuration(150)
-        set.setInterpolator(AccelerateDecelerateInterpolator())
+        set.interpolator = AccelerateDecelerateInterpolator()
         set.playTogether(scaleY, scaleX)
         set.start()
     }

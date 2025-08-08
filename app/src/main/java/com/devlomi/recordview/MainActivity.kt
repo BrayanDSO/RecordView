@@ -38,8 +38,8 @@ class MainActivity : AppCompatActivity() {
         val btnChangeOnclick = findViewById<Button>(R.id.btn_change_onclick)
 
         // To Enable Record Lock
-//        recordView.setLockEnabled(true);
-//        recordView.setRecordLockImageView(findViewById(R.id.record_lock));
+        recordView.setLockEnabled(true);
+        recordView.setRecordLockImageView(findViewById(R.id.record_lock));
         //IMPORTANT
         recordButton.setRecordView(recordView)
 
