@@ -1,5 +1,6 @@
 package com.devlomi.record_view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
@@ -9,6 +10,7 @@ import android.view.View.OnTouchListener
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.content.withStyledAttributes
 
 /**
  * Created by Devlomi on 13/12/2017.
@@ -47,21 +49,20 @@ class RecordButton : AppCompatImageView, View.OnClickListener {
     private fun init(context: Context, attrs: AttributeSet?) {
         var scaleUpTo = 1f
         if (attrs != null) {
-            val typedArray = context.obtainStyledAttributes(attrs, R.styleable.RecordButton)
+            context.withStyledAttributes(attrs, R.styleable.RecordButton) {
+                val imageResource = getResourceId(R.styleable.RecordButton_mic_icon, -1)
+                val sendResource = getResourceId(R.styleable.RecordButton_send_icon, -1)
+                scaleUpTo = getFloat(R.styleable.RecordButton_scale_up_to, -1f)
 
-            val imageResource = typedArray.getResourceId(R.styleable.RecordButton_mic_icon, -1)
-            val sendResource = typedArray.getResourceId(R.styleable.RecordButton_send_icon, -1)
-            scaleUpTo = typedArray.getFloat(R.styleable.RecordButton_scale_up_to, -1f)
+                if (imageResource != -1) {
+                    setTheImageResource(imageResource)
+                }
 
-            if (imageResource != -1) {
-                setTheImageResource(imageResource)
+                if (sendResource != -1) {
+                    sendIcon = AppCompatResources.getDrawable(getContext(), sendResource)
+                }
+
             }
-
-            if (sendResource != -1) {
-                sendIcon = AppCompatResources.getDrawable(getContext(), sendResource)
-            }
-
-            typedArray.recycle()
         }
 
         scaleAnim = ScaleAnim(this)
@@ -98,10 +99,11 @@ class RecordButton : AppCompatImageView, View.OnClickListener {
     }
 
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (this.isListenForRecord) {
             when (event.action) {
-                MotionEvent.ACTION_DOWN -> recordView!!.onActionDown(this, event)
+                MotionEvent.ACTION_DOWN -> recordView!!.onActionDown(this)
                 MotionEvent.ACTION_MOVE -> recordView!!.onActionMove(this, event)
                 MotionEvent.ACTION_UP -> recordView!!.onActionUp(this)
             }
@@ -129,10 +131,6 @@ class RecordButton : AppCompatImageView, View.OnClickListener {
 
     fun setInLockMode(inLockMode: Boolean) {
         isInLockMode = inLockMode
-    }
-
-    fun setSendIconResource(resource: Int) {
-        sendIcon = AppCompatResources.getDrawable(getContext(), resource)
     }
 
     override fun onClick(v: View?) {

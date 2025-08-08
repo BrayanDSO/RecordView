@@ -282,7 +282,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     }
 
 
-    fun onActionDown(recordBtn: RecordButton, motionEvent: MotionEvent?) {
+    fun onActionDown(recordBtn: RecordButton) {
         if (!this.isRecordPermissionGranted) {
             return
         }
