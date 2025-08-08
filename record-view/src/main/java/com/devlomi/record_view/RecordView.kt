@@ -1,5 +1,6 @@
 package com.devlomi.record_view
 
+import android.Manifest
 import android.content.Context
 import android.media.MediaPlayer
 import android.os.SystemClock
@@ -11,7 +12,11 @@ import android.widget.Chronometer
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.PermissionChecker
 import io.supercharge.shimmerlayout.ShimmerLayout
 import java.io.IOException
 import androidx.core.content.withStyledAttributes
@@ -38,7 +43,18 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     private var elapsedTime: Long = 0
     private val context: Context
     private var recordListener: OnRecordListener? = null
-    private var recordPermissionHandler: RecordPermissionHandler? = null
+    private val isPermissionGranted: Boolean
+        get() {
+            val isGranted = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.RECORD_AUDIO
+            ) == PermissionChecker.PERMISSION_GRANTED
+            if (isGranted) return true
+            ActivityCompat.requestPermissions((context as AppCompatActivity),
+                arrayOf(Manifest.permission.RECORD_AUDIO),
+                0)
+            return false
+        }
     private var isSwiped = false
     private var isLessThanSecondAllowed = false
     private var isSoundEnabled = true
@@ -49,9 +65,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     private var animationHelper: AnimationHelper? = null
     var isShimmerEffectEnabled: Boolean = true
     private var recordButton: RecordButton? = null
-
-    private var canRecord = true
-
     private var recordLockView: RecordLockView? = null
     private var isLockEnabled = false
     var recordLockYInWindow: Float = 0f
@@ -238,11 +251,10 @@ class RecordView : RelativeLayout, RecordLockViewListener {
 
 
     fun onActionDown(recordBtn: RecordButton) {
-        if (!this.isRecordPermissionGranted) {
+        if (!isPermissionGranted) {
             return
         }
-
-
+        
         if (recordListener != null) recordListener!!.onStart()
 
         animationHelper!!.setStartRecorded(true)
@@ -292,7 +304,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
 
 
     fun onActionMove(recordBtn: RecordButton, motionEvent: MotionEvent) {
-        if (!canRecord || fractionReached) {
+        if (!isPermissionGranted || fractionReached) {
             return
         }
 
@@ -417,7 +429,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     }
 
     fun onActionUp(recordBtn: RecordButton?) {
-        if (!canRecord || fractionReached) {
+        if (!isPermissionGranted || fractionReached) {
             return
         }
 
@@ -504,18 +516,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
         recordBtn.setInLockMode(false)
     }
 
-
-    private val isRecordPermissionGranted: Boolean
-        get() {
-            canRecord = if (recordPermissionHandler == null) {
-                true
-            } else {
-                recordPermissionHandler!!.isPermissionGranted
-            }
-
-            return canRecord
-        }
-
     private fun setMarginRight(marginRight: Int) {
         val layoutParams = slideToCancelLayout!!.layoutParams as LayoutParams
         layoutParams.rightMargin = TypedValueCompat.dpToPx(marginRight.toFloat(), context.resources.displayMetrics).toInt()
@@ -531,10 +531,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
 
     fun setOnRecordListener(recordListener: OnRecordListener?) {
         this.recordListener = recordListener
-    }
-
-    fun setRecordPermissionHandler(recordPermissionHandler: RecordPermissionHandler?) {
-        this.recordPermissionHandler = recordPermissionHandler
     }
 
     fun setOnBasketAnimationEndListener(onBasketAnimationEndListener: OnBasketAnimationEnd?) {

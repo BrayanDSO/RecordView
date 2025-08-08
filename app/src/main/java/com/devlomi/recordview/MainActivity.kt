@@ -134,26 +134,6 @@ class MainActivity : AppCompatActivity() {
                 Log.d("RecordView", "Basket Animation Finished")
             }
         })
-
-        recordView.setRecordPermissionHandler(object : RecordPermissionHandler {
-            override val isPermissionGranted: Boolean
-                get() {
-                    val recordPermissionAvailable = ContextCompat.checkSelfPermission(
-                        this@MainActivity,
-                        Manifest.permission.RECORD_AUDIO
-                    ) == PermissionChecker.PERMISSION_GRANTED
-                    if (recordPermissionAvailable) {
-                        return true
-                    }
-
-
-                    ActivityCompat.requestPermissions(this@MainActivity,
-                        arrayOf<String>(Manifest.permission.RECORD_AUDIO),
-                        0)
-
-                    return false
-                }
-        })
     }
 
     private fun stopRecording(deleteFile: Boolean) {
