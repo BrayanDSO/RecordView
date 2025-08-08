@@ -56,7 +56,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
             return false
         }
     private var isSwiped = false
-    private var isLessThanSecondAllowed = false
     private var isSoundEnabled = true
     private var RECORD_START = R.raw.record_start
     private var RECORD_FINISHED = R.raw.record_finished
@@ -254,7 +253,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
         if (!isPermissionGranted) {
             return
         }
-        
+
         if (recordListener != null) recordListener!!.onStart()
 
         animationHelper!!.setStartRecorded(true)
@@ -439,7 +438,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     private fun finishAndSaveRecord() {
         elapsedTime = System.currentTimeMillis() - startTime
 
-        if (!isLessThanSecondAllowed && isLessThanOneSecond(elapsedTime) && !isSwiped) {
+        if (isLessThanOneSecond(elapsedTime) && !isSwiped) {
             if (recordListener != null) recordListener!!.onLessThanSecond()
             animationHelper!!.setStartRecorded(false)
 
@@ -535,10 +534,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
 
     fun setOnBasketAnimationEndListener(onBasketAnimationEndListener: OnBasketAnimationEnd?) {
         animationHelper!!.setOnBasketAnimationEndListener(onBasketAnimationEndListener)
-    }
-
-    fun setLessThanSecondAllowed(isAllowed: Boolean) {
-        isLessThanSecondAllowed = isAllowed
     }
 
     fun setSlideToCancelText(text: String?) {

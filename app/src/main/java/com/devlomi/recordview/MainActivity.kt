@@ -73,10 +73,6 @@ class MainActivity : AppCompatActivity() {
 
         recordView.setSmallMicColor(Color.parseColor("#c2185b"))
 
-        //prevent recording under one Second
-        recordView.setLessThanSecondAllowed(false)
-
-
         recordView.setSlideToCancelText("Slide To Cancel")
 
 
