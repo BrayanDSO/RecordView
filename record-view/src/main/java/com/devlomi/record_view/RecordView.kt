@@ -199,7 +199,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     }
 
     private fun hideViews(hideSmallMic: Boolean) {
-        slideToCancelLayout!!.setVisibility(GONE)
+        slideToCancelLayout!!.visibility = GONE
         counterTime!!.visibility = GONE
         cancelTextView!!.visibility = GONE
         if (isLockEnabled && recordLockView != null) {
@@ -209,7 +209,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     }
 
     private fun showViews() {
-        slideToCancelLayout!!.setVisibility(VISIBLE)
+        slideToCancelLayout!!.visibility = VISIBLE
         smallBlinkingMic!!.setVisibility(VISIBLE)
         counterTime!!.visibility = VISIBLE
         if (isLockEnabled && recordLockView != null) {
