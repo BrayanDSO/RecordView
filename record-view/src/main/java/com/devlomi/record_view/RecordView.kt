@@ -1,11 +1,13 @@
 package com.devlomi.record_view
 
 import android.content.Context
+import android.content.res.TypedArray
 import android.media.MediaPlayer
 import android.media.MediaPlayer.OnCompletionListener
 import android.os.Handler
 import android.os.SystemClock
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -14,10 +16,11 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
-import com.devlomi.record_view.DpUtil.toPixel
+import androidx.core.content.res.TypedArrayUtils
 import io.supercharge.shimmerlayout.ShimmerLayout
 import java.io.IOException
 import androidx.core.content.withStyledAttributes
+import androidx.core.util.TypedValueCompat
 
 /**
  * Created by Devlomi on 24/08/2017.
@@ -162,8 +165,8 @@ class RecordView : RelativeLayout, RecordLockViewListener {
                     cancelTextView!!.setTextColor(cancelTextColor)
                 }
 
-                setMarginRight(slideMarginRight, true)
-                setCancelMarginRight(cancelMarginRight, true)
+                setMarginRight(slideMarginRight)
+                setCancelMarginRight(cancelMarginRight)
 
             }
         }
@@ -581,21 +584,15 @@ class RecordView : RelativeLayout, RecordLockViewListener {
             return canRecord
         }
 
-    private fun setMarginRight(marginRight: Int, convertToDp: Boolean) {
+    private fun setMarginRight(marginRight: Int) {
         val layoutParams = slideToCancelLayout!!.layoutParams as LayoutParams
-        if (convertToDp) {
-            layoutParams.rightMargin = toPixel(marginRight.toFloat(), context).toInt()
-        } else layoutParams.rightMargin = marginRight
-
+        layoutParams.rightMargin = TypedValueCompat.dpToPx(marginRight.toFloat(), context.resources.displayMetrics).toInt()
         slideToCancelLayout!!.setLayoutParams(layoutParams)
     }
 
-    private fun setCancelMarginRight(marginRight: Int, convertToDp: Boolean) {
+    private fun setCancelMarginRight(marginRight: Int) {
         val layoutParams = slideToCancelLayout!!.layoutParams as LayoutParams
-        if (convertToDp) {
-            layoutParams.rightMargin = toPixel(marginRight.toFloat(), context).toInt()
-        } else layoutParams.rightMargin = marginRight
-
+        layoutParams.rightMargin = TypedValueCompat.dpToPx(marginRight.toFloat(), context.resources.displayMetrics).toInt()
         cancelTextView!!.setLayoutParams(layoutParams)
     }
 
@@ -636,11 +633,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
         smallBlinkingMic!!.setImageResource(icon)
     }
 
-    fun setSlideMarginRight(marginRight: Int) {
-        setMarginRight(marginRight, true)
-    }
-
-
     fun setCustomSounds(startSound: Int, finishedSound: Int, errorSound: Int) {
         //0 means do not play sound
         RECORD_START = startSound
@@ -667,7 +659,11 @@ class RecordView : RelativeLayout, RecordLockViewListener {
 
 
     private fun setCancelBounds(cancelBounds: Float, convertDpToPixel: Boolean) {
-        val bounds = if (convertDpToPixel) toPixel(cancelBounds, context) else cancelBounds
+        val bounds = if (convertDpToPixel) {
+            TypedValueCompat.dpToPx(cancelBounds, context.resources.displayMetrics)
+        } else {
+            cancelBounds
+        }
         this.cancelBounds = bounds
     }
 

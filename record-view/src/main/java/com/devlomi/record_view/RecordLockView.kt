@@ -16,7 +16,7 @@ import android.view.View
 import android.view.animation.AnticipateInterpolator
 import android.view.animation.DecelerateInterpolator
 import androidx.appcompat.content.res.AppCompatResources
-import com.devlomi.record_view.DpUtil.toPixel
+import androidx.core.util.TypedValueCompat
 
 class RecordLockView : View {
     private var bottomLockDrawable: Drawable? = null
@@ -64,9 +64,9 @@ class RecordLockView : View {
         bottomLockDrawable = AppCompatResources.getDrawable(context, R.drawable.recv_lock_bottom)
         topLockDrawable = AppCompatResources.getDrawable(context, R.drawable.recv_lock_top)
 
-        fiveDp = toPixel(5f, context)
-        fourDp = toPixel(4f, context)
-        twoDp = toPixel(2f, context)
+        fiveDp = TypedValueCompat.dpToPx(5f, context.resources.displayMetrics)
+        fourDp = TypedValueCompat.dpToPx(4f, context.resources.displayMetrics)
+        twoDp = TypedValueCompat.dpToPx(2f, context.resources.displayMetrics)
 
         if (attrs != null && defStyleAttr == 0 && defStyleRes == 0) {
             val typedArray = context.obtainStyledAttributes(
