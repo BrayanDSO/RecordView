@@ -17,6 +17,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import com.devlomi.record_view.DpUtil.toPixel
 import io.supercharge.shimmerlayout.ShimmerLayout
 import java.io.IOException
+import androidx.core.content.withStyledAttributes
 
 /**
  * Created by Devlomi on 24/08/2017.
@@ -92,80 +93,79 @@ class RecordView : RelativeLayout, RecordLockViewListener {
         addView(view)
 
 
-        val viewGroup = view.getParent() as ViewGroup
+        val viewGroup = view.parent as ViewGroup
         viewGroup.setClipChildren(false)
 
-        arrow = view.findViewById<ImageView>(R.id.arrow)
-        slideToCancel = view.findViewById<TextView>(R.id.slide_to_cancel)
-        smallBlinkingMic = view.findViewById<ImageView>(R.id.glowing_mic)
-        counterTime = view.findViewById<Chronometer>(R.id.counter_tv)
-        basketImg = view.findViewById<ImageView>(R.id.basket_img)
-        slideToCancelLayout = view.findViewById<ShimmerLayout>(R.id.shimmer_layout)
-        cancelTextView = view.findViewById<TextView>(R.id.recv_tv_cancel)
+        arrow = view.findViewById(R.id.arrow)
+        slideToCancel = view.findViewById(R.id.slide_to_cancel)
+        smallBlinkingMic = view.findViewById(R.id.glowing_mic)
+        counterTime = view.findViewById(R.id.counter_tv)
+        basketImg = view.findViewById(R.id.basket_img)
+        slideToCancelLayout = view.findViewById(R.id.shimmer_layout)
+        cancelTextView = view.findViewById(R.id.recv_tv_cancel)
 
 
         hideViews(true)
 
 
         if (attrs != null && defStyleAttr == 0 && defStyleRes == 0) {
-            val typedArray = context.obtainStyledAttributes(
+            context.withStyledAttributes(
                 attrs, R.styleable.RecordView,
                 defStyleAttr, defStyleRes
-            )
+            ) {
+                val slideArrowResource =
+                    getResourceId(R.styleable.RecordView_slide_to_cancel_arrow, -1)
+                val slideToCancelText =
+                    getString(R.styleable.RecordView_slide_to_cancel_text)
+                val slideMarginRight =
+                    getDimension(R.styleable.RecordView_slide_to_cancel_margin_right, 30f)
+                        .toInt()
+                val counterTimeColor =
+                    getColor(R.styleable.RecordView_counter_time_color, -1)
+                val arrowColor =
+                    getColor(R.styleable.RecordView_slide_to_cancel_arrow_color, -1)
+
+                val cancelText = getString(R.styleable.RecordView_cancel_text)
+                val cancelMarginRight =
+                    getDimension(R.styleable.RecordView_cancel_text_margin_right, 30f)
+                        .toInt()
+                val cancelTextColor = getColor(R.styleable.RecordView_cancel_text_color, -1)
 
 
-            val slideArrowResource =
-                typedArray.getResourceId(R.styleable.RecordView_slide_to_cancel_arrow, -1)
-            val slideToCancelText =
-                typedArray.getString(R.styleable.RecordView_slide_to_cancel_text)
-            val slideMarginRight =
-                typedArray.getDimension(R.styleable.RecordView_slide_to_cancel_margin_right, 30f)
-                    .toInt()
-            val counterTimeColor =
-                typedArray.getColor(R.styleable.RecordView_counter_time_color, -1)
-            val arrowColor =
-                typedArray.getColor(R.styleable.RecordView_slide_to_cancel_arrow_color, -1)
+                val cancelBounds =
+                    getDimensionPixelSize(R.styleable.RecordView_slide_to_cancel_bounds, -1)
 
-            val cancelText = typedArray.getString(R.styleable.RecordView_cancel_text)
-            val cancelMarginRight =
-                typedArray.getDimension(R.styleable.RecordView_cancel_text_margin_right, 30f)
-                    .toInt()
-            val cancelTextColor = typedArray.getColor(R.styleable.RecordView_cancel_text_color, -1)
+                if (cancelBounds != -1) setCancelBounds(
+                    cancelBounds.toFloat(),
+                    false
+                ) //don't convert it to pixels since it's already in pixels
 
 
-            val cancelBounds =
-                typedArray.getDimensionPixelSize(R.styleable.RecordView_slide_to_cancel_bounds, -1)
+                if (slideArrowResource != -1) {
+                    val slideArrow =
+                        AppCompatResources.getDrawable(getContext(), slideArrowResource)
+                    arrow!!.setImageDrawable(slideArrow)
+                }
 
-            if (cancelBounds != -1) setCancelBounds(
-                cancelBounds.toFloat(),
-                false
-            ) //don't convert it to pixels since it's already in pixels
+                if (slideToCancelText != null) slideToCancel!!.text = slideToCancelText
+
+                if (counterTimeColor != -1) setCounterTimeColor(counterTimeColor)
 
 
-            if (slideArrowResource != -1) {
-                val slideArrow = AppCompatResources.getDrawable(getContext(), slideArrowResource)
-                arrow!!.setImageDrawable(slideArrow)
+                if (arrowColor != -1) setSlideToCancelArrowColor(arrowColor)
+
+                if (cancelText != null) {
+                    cancelTextView!!.text = cancelText
+                }
+
+                if (cancelTextColor != -1) {
+                    cancelTextView!!.setTextColor(cancelTextColor)
+                }
+
+                setMarginRight(slideMarginRight, true)
+                setCancelMarginRight(cancelMarginRight, true)
+
             }
-
-            if (slideToCancelText != null) slideToCancel!!.setText(slideToCancelText)
-
-            if (counterTimeColor != -1) setCounterTimeColor(counterTimeColor)
-
-
-            if (arrowColor != -1) setSlideToCancelArrowColor(arrowColor)
-
-            if (cancelText != null) {
-                cancelTextView!!.setText(cancelText)
-            }
-
-            if (cancelTextColor != -1) {
-                cancelTextView!!.setTextColor(cancelTextColor)
-            }
-
-            setMarginRight(slideMarginRight, true)
-            setCancelMarginRight(cancelMarginRight, true)
-
-            typedArray.recycle()
         }
 
 
@@ -204,36 +204,34 @@ class RecordView : RelativeLayout, RecordLockViewListener {
 
     private fun initTimeLimitHandler() {
         handler = Handler()
-        runnable = object : Runnable {
-            override fun run() {
-                if (recordListener != null && !isSwiped) recordListener!!.onFinish(
-                    elapsedTime,
-                    true
-                )
+        runnable = Runnable {
+            if (recordListener != null && !isSwiped) recordListener!!.onFinish(
+                elapsedTime,
+                true
+            )
 
-                removeTimeLimitCallbacks()
+            removeTimeLimitCallbacks()
 
-                animationHelper!!.setStartRecorded(false)
-
-
-                if (!isSwiped) playSound(RECORD_FINISHED)
+            animationHelper!!.setStartRecorded(false)
 
 
-                if (recordButton != null) {
-                    resetRecord(recordButton!!)
-                }
-                isSwiped = true
+            if (!isSwiped) playSound(RECORD_FINISHED)
+
+
+            if (recordButton != null) {
+                resetRecord(recordButton!!)
             }
+            isSwiped = true
         }
     }
 
 
     private fun hideViews(hideSmallMic: Boolean) {
         slideToCancelLayout!!.setVisibility(GONE)
-        counterTime!!.setVisibility(GONE)
-        cancelTextView!!.setVisibility(GONE)
+        counterTime!!.visibility = GONE
+        cancelTextView!!.visibility = GONE
         if (isLockEnabled && recordLockView != null) {
-            recordLockView!!.setVisibility(GONE)
+            recordLockView!!.visibility = GONE
         }
         if (hideSmallMic) smallBlinkingMic!!.setVisibility(GONE)
     }
@@ -241,9 +239,9 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     private fun showViews() {
         slideToCancelLayout!!.setVisibility(VISIBLE)
         smallBlinkingMic!!.setVisibility(VISIBLE)
-        counterTime!!.setVisibility(VISIBLE)
+        counterTime!!.visibility = VISIBLE
         if (isLockEnabled && recordLockView != null) {
-            recordLockView!!.setVisibility(VISIBLE)
+            recordLockView!!.visibility = VISIBLE
         }
     }
 
@@ -259,22 +257,18 @@ class RecordView : RelativeLayout, RecordLockViewListener {
 
             try {
                 player = MediaPlayer()
-                val afd = context.getResources().openRawResourceFd(soundRes)
+                val afd = context.resources.openRawResourceFd(soundRes)
                 if (afd == null) return
                 player!!.setDataSource(
-                    afd.getFileDescriptor(),
-                    afd.getStartOffset(),
+                    afd.fileDescriptor,
+                    afd.startOffset,
                     afd.getLength()
                 )
                 afd.close()
                 player!!.prepare()
                 player!!.start()
-                player!!.setOnCompletionListener(object : OnCompletionListener {
-                    override fun onCompletion(mp: MediaPlayer) {
-                        mp.release()
-                    }
-                })
-                player!!.setLooping(false)
+                player!!.setOnCompletionListener { mp -> mp.release() }
+                player!!.isLooping = false
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -308,13 +302,13 @@ class RecordView : RelativeLayout, RecordLockViewListener {
             slideToCancelLayout!!.startShimmerAnimation()
         }
 
-        initialRecordButtonX = recordBtn.getX()
+        initialRecordButtonX = recordBtn.x
 
 
         val recordButtonLocation = IntArray(2)
         recordBtn.getLocationInWindow(recordButtonLocation)
 
-        initialRecordButtonY = recordButton!!.getY()
+        initialRecordButtonY = recordButton!!.y
 
         if (isLockEnabled && recordLockView != null) {
             isLockInSameParent = this.isLockAndRecordButtonHaveSameParent
@@ -322,13 +316,13 @@ class RecordView : RelativeLayout, RecordLockViewListener {
             recordLockView!!.getLocationInWindow(recordLockLocation)
             recordLockXInWindow = recordLockLocation[0].toFloat()
             recordLockYInWindow =
-                if (isLockInSameParent) recordLockView!!.getY() else recordLockLocation[1].toFloat()
+                if (isLockInSameParent) recordLockView!!.y else recordLockLocation[1].toFloat()
             recordButtonYInWindow =
-                if (isLockInSameParent) recordButton!!.getY() else recordButtonLocation[1].toFloat()
+                if (isLockInSameParent) recordButton!!.y else recordButtonLocation[1].toFloat()
         }
 
 
-        basketInitialY = basketImg!!.getY() + 90
+        basketInitialY = basketImg!!.y + 90
 
         playSound(RECORD_START)
 
@@ -353,7 +347,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
         if (!isSwiped) {
             //Swipe To Cancel
 
-            if (slideToCancelLayout!!.getX() != 0f && slideToCancelLayout!!.getX() <= counterTime!!.getRight() + cancelBounds) {
+            if (slideToCancelLayout!!.x != 0f && slideToCancelLayout!!.x <= counterTime!!.right + cancelBounds) {
                 //if the time was less than one second then do not start basket animation
 
                 if (isLessThanOneSecond(time)) {
@@ -394,16 +388,16 @@ class RecordView : RelativeLayout, RecordLockViewListener {
             } else {
                 if (canMoveX(motionEvent)) {
                     recordBtn.animate()
-                        .x(motionEvent.getRawX())
+                        .x(motionEvent.rawX)
                         .setDuration(0)
                         .start()
 
 
-                    if (difX == 0f) difX = (initialRecordButtonX - slideToCancelLayout!!.getX())
+                    if (difX == 0f) difX = (initialRecordButtonX - slideToCancelLayout!!.x)
 
 
                     slideToCancelLayout!!.animate()
-                        .x(motionEvent.getRawX() - difX)
+                        .x(motionEvent.rawX - difX)
                         .setDuration(0)
                         .start()
                 }
@@ -416,14 +410,14 @@ class RecordView : RelativeLayout, RecordLockViewListener {
                    we had to get screen height and get the difference between motionEvent and screen height
                  */
                 val newY =
-                    if (isLockInSameParent) motionEvent.getRawY() else motionEvent.getRawY() - recordButtonYInWindow
+                    if (isLockInSameParent) motionEvent.rawY else motionEvent.rawY - recordButtonYInWindow
                 if (canMoveY(motionEvent, newY)) {
                     recordBtn.animate()
                         .y(newY)
                         .setDuration(0)
                         .start()
 
-                    val currentY = motionEvent.getRawY()
+                    val currentY = motionEvent.rawY
                     val minY = recordLockYInWindow
                     val maxY = recordButtonYInWindow
 
@@ -447,7 +441,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
 
     private fun canMoveX(motionEvent: MotionEvent): Boolean {
         //Prevent Swiping out of bounds
-        if (motionEvent.getRawX() < initialRecordButtonX) {
+        if (motionEvent.rawX < initialRecordButtonX) {
             if (isLockEnabled) {
                 //prevent swiping X if record button goes up
                 return currentYFraction <= 0.3
@@ -464,10 +458,10 @@ class RecordView : RelativeLayout, RecordLockViewListener {
              1. prevent swiping below record button
              2. prevent swiping up if record button is NOT near record Lock's X
              */
-            if (isLockInSameParent) {
-                return motionEvent.getRawY() < initialRecordButtonY && motionEvent.getRawX() >= recordLockXInWindow
+            return if (isLockInSameParent) {
+                motionEvent.rawY < initialRecordButtonY && motionEvent.rawX >= recordLockXInWindow
             } else {
-                return dif <= initialRecordButtonY && motionEvent.getRawX() >= recordLockXInWindow
+                dif <= initialRecordButtonY && motionEvent.rawX >= recordLockXInWindow
             }
         }
 
@@ -507,7 +501,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     }
 
     private fun switchToLockedMode() {
-        cancelTextView!!.setVisibility(VISIBLE)
+        cancelTextView!!.visibility = VISIBLE
         slideToCancelLayout!!.setVisibility(GONE)
 
         recordButton!!.animate()
@@ -531,8 +525,8 @@ class RecordView : RelativeLayout, RecordLockViewListener {
                 return false
             }
 
-            val lockParent = recordLockView!!.getParent()
-            val recordButtonParent = recordButton!!.getParent()
+            val lockParent = recordLockView!!.parent
+            val recordButtonParent = recordButton!!.parent
             if (lockParent == null || recordButtonParent == null) {
                 return false
             }
@@ -564,7 +558,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
             recordBtn.changeIconToRecord()
         }
 
-        cancelTextView!!.setVisibility(GONE)
+        cancelTextView!!.visibility = GONE
         recordBtn.isListenForRecord = true
         recordBtn.setInLockMode(false)
     }
@@ -578,17 +572,17 @@ class RecordView : RelativeLayout, RecordLockViewListener {
 
     private val isRecordPermissionGranted: Boolean
         get() {
-            if (recordPermissionHandler == null) {
-                canRecord = true
+            canRecord = if (recordPermissionHandler == null) {
+                true
             } else {
-                canRecord = recordPermissionHandler!!.isPermissionGranted
+                recordPermissionHandler!!.isPermissionGranted
             }
 
             return canRecord
         }
 
     private fun setMarginRight(marginRight: Int, convertToDp: Boolean) {
-        val layoutParams = slideToCancelLayout!!.getLayoutParams() as LayoutParams
+        val layoutParams = slideToCancelLayout!!.layoutParams as LayoutParams
         if (convertToDp) {
             layoutParams.rightMargin = toPixel(marginRight.toFloat(), context).toInt()
         } else layoutParams.rightMargin = marginRight
@@ -597,7 +591,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     }
 
     private fun setCancelMarginRight(marginRight: Int, convertToDp: Boolean) {
-        val layoutParams = slideToCancelLayout!!.getLayoutParams() as LayoutParams
+        val layoutParams = slideToCancelLayout!!.layoutParams as LayoutParams
         if (convertToDp) {
             layoutParams.rightMargin = toPixel(marginRight.toFloat(), context).toInt()
         } else layoutParams.rightMargin = marginRight
@@ -627,7 +621,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     }
 
     fun setSlideToCancelText(text: String?) {
-        slideToCancel!!.setText(text)
+        slideToCancel!!.text = text
     }
 
     fun setSlideToCancelTextColor(color: Int) {
@@ -706,7 +700,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     fun setRecordLockImageView(recordLockView: RecordLockView?) {
         this.recordLockView = recordLockView
         this.recordLockView!!.recordLockViewListener = this
-        this.recordLockView!!.setVisibility(INVISIBLE)
+        this.recordLockView!!.visibility = INVISIBLE
     }
 
     fun setLockEnabled(lockEnabled: Boolean) {
@@ -718,22 +712,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
         this.recordButton!!.setSendClickListener { v: View? ->
             finishAndSaveRecord()
         }
-    }
-
-    /*
-    Use this if you want to Finish And save the Record if user closes the app for example in 'onPause()'
-     */
-    fun finishRecord() {
-        finishAndSaveRecord()
-    }
-
-    /*
-    Use this if you want to Cancel And delete the Record if user closes the app for example in 'onPause()'
-     */
-    fun cancelRecord() {
-        hideViews(true)
-        animationHelper!!.clearAlphaAnimation(false)
-        cancelAndDeleteRecord()
     }
 
     override fun onFractionReached() {
