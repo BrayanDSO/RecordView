@@ -15,6 +15,7 @@ import android.view.animation.Animation.AnimationListener
 import android.view.animation.TranslateAnimation
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import androidx.vectordrawable.graphics.drawable.AnimatorInflaterCompat
 
@@ -175,14 +176,14 @@ class AnimationHelper(
 
     fun moveRecordButtonAndSlideToCancelBack(
         recordBtn: RecordButton,
-        slideToCancelLayout: FrameLayout,
+        slideToCancelLayout: LinearLayout,
         initialX: Float,
         initialY: Float,
         difX: Float,
         setY: Boolean
     ) {
         val positionAnimator =
-            ValueAnimator.ofFloat(recordBtn.getX(), initialX)
+            ValueAnimator.ofFloat(recordBtn.x, initialX)
 
         positionAnimator.interpolator = AccelerateDecelerateInterpolator()
         positionAnimator.addUpdateListener { animation ->

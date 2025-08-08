@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Chronometer
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -17,7 +18,6 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
-import io.supercharge.shimmerlayout.ShimmerLayout
 import java.io.IOException
 import androidx.core.content.withStyledAttributes
 import androidx.core.util.TypedValueCompat
@@ -31,7 +31,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     private var counterTime: Chronometer? = null
     private var slideToCancel: TextView? = null
     private var cancelTextView: TextView? = null
-    private var slideToCancelLayout: ShimmerLayout? = null
+    private var slideToCancelLayout: LinearLayout? = null
     private var arrow: ImageView? = null
     private var initialRecordButtonX = 0f
     private var initialRecordButtonY = 0f
@@ -62,7 +62,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     private var RECORD_ERROR = R.raw.record_error
     private var player: MediaPlayer? = null
     private var animationHelper: AnimationHelper? = null
-    var isShimmerEffectEnabled: Boolean = true
     private var recordButton: RecordButton? = null
     private var recordLockView: RecordLockView? = null
     private var isLockEnabled = false
@@ -107,7 +106,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
         smallBlinkingMic = view.findViewById(R.id.glowing_mic)
         counterTime = view.findViewById(R.id.counter_tv)
         basketImg = view.findViewById(R.id.basket_img)
-        slideToCancelLayout = view.findViewById(R.id.shimmer_layout)
+        slideToCancelLayout = view.findViewById(R.id.slide_to_cancel_layout)
         cancelTextView = view.findViewById(R.id.recv_tv_cancel)
 
 
@@ -263,10 +262,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
 
         recordBtn.startScale()
 
-        if (this.isShimmerEffectEnabled) {
-            slideToCancelLayout!!.startShimmerAnimation()
-        }
-
         initialRecordButtonX = recordBtn.x
 
 
@@ -336,10 +331,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
                 )
 
                 counterTime!!.stop()
-                if (this.isShimmerEffectEnabled) {
-                    slideToCancelLayout!!.stopShimmerAnimation()
-                }
-
                 isSwiped = true
 
 
@@ -501,10 +492,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
             isLockEnabled
         )
         counterTime!!.stop()
-        if (this.isShimmerEffectEnabled) {
-            slideToCancelLayout!!.stopShimmerAnimation()
-        }
-
         if (isLockEnabled) {
             recordLockView!!.reset()
             recordBtn.changeIconToRecord()

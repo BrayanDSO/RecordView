@@ -262,8 +262,6 @@ recordView.setSlideToCancelArrowColor(Color.parseColor("#ff0000"));
 // change Counter Time (Chronometer) color
 recordView.setCounterTimeColor(Color.parseColor("#ff0000"));
 
-// enable or disable ShimmerEffect
-recordView.setShimmerEffectEnabled(true);
 
 // auto cancelling recording after timeLimit (In millis)  
 recordView.setTimeLimit(30000);//30 sec
@@ -289,7 +287,6 @@ recordButton.setSendIconResource(R.drawable.recv_ic_send)
 ### Thanks/Credits
 - [NetoDevel](https://github.com/NetoDevel) for some inspiration and some code in his lib [audio-recorder-button](https://github.com/safetysystemtechnology/audio-recorder-button) 
 - [alexjlockwood](https://github.com/alexjlockwood) for making this Awesome tool  [ShapeShifter](https://shapeshifter.design/) which helped me to animate vectors easily
-- team-supercharge for making [ShimmerLayout](https://github.com/team-supercharge/ShimmerLayout)
 
 ## Looking for IOS Version?
 try out [iRecordView](https://github.com/3llomi/iRecordView)
