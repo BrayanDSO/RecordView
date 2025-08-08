@@ -1,13 +1,9 @@
 package com.devlomi.record_view
 
 import android.content.Context
-import android.content.res.TypedArray
 import android.media.MediaPlayer
-import android.media.MediaPlayer.OnCompletionListener
-import android.os.Handler
 import android.os.SystemClock
 import android.util.AttributeSet
-import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +12,6 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.content.res.TypedArrayUtils
 import io.supercharge.shimmerlayout.ShimmerLayout
 import java.io.IOException
 import androidx.core.content.withStyledAttributes
@@ -52,7 +47,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     private var RECORD_ERROR = R.raw.record_error
     private var player: MediaPlayer? = null
     private var animationHelper: AnimationHelper? = null
-    private var isRecordButtonGrowingAnimationEnabled = true
     var isShimmerEffectEnabled: Boolean = true
     private var recordButton: RecordButton? = null
 
@@ -172,14 +166,13 @@ class RecordView : RelativeLayout, RecordLockViewListener {
         animationHelper = AnimationHelper(
             context,
             basketImg!!,
-            smallBlinkingMic,
-            isRecordButtonGrowingAnimationEnabled
+            smallBlinkingMic
         )
 
-        cancelTextView!!.setOnClickListener(OnClickListener { v: View? ->
+        cancelTextView!!.setOnClickListener{ v: View? ->
             animationHelper!!.animateBasket(basketInitialY)
             cancelAndDeleteRecord()
-        })
+        }
     }
 
     private fun cancelAndDeleteRecord() {
@@ -257,9 +250,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
         animationHelper!!.resetSmallMic()
 
 
-        if (isRecordButtonGrowingAnimationEnabled) {
-            recordBtn.startScale()
-        }
+        recordBtn.startScale()
 
         if (this.isShimmerEffectEnabled) {
             slideToCancelLayout!!.startShimmerAnimation()
@@ -386,12 +377,10 @@ class RecordView : RelativeLayout, RecordLockViewListener {
 
                     recordLockView!!.animateLock(fraction)
 
-                    if (isRecordButtonGrowingAnimationEnabled) {
-                        //convert fraction to scale
-                        //so instead of starting from 0 to 1, it will start from 1 to 0
-                        val scale = 1 - fraction + 1
-                        recordBtn.animate().scaleX(scale).scaleY(scale).setDuration(0).start()
-                    }
+                    //convert fraction to scale
+                    //so instead of starting from 0 to 1, it will start from 1 to 0
+                    val scale = 1 - fraction + 1
+                    recordBtn.animate().scaleX(scale).scaleY(scale).setDuration(0).start()
                 }
             }
         }
@@ -464,9 +453,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
             .setDuration(100)
             .start()
 
-        if (isRecordButtonGrowingAnimationEnabled) {
-            recordButton!!.stopScale()
-        }
+        recordButton!!.stopScale()
 
         recordButton!!.isListenForRecord = false
         recordButton!!.setInLockMode(true)
@@ -542,8 +529,8 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     }
 
 
-    fun setOnRecordListener(recrodListener: OnRecordListener?) {
-        this.recordListener = recrodListener
+    fun setOnRecordListener(recordListener: OnRecordListener?) {
+        this.recordListener = recordListener
     }
 
     fun setRecordPermissionHandler(recordPermissionHandler: RecordPermissionHandler?) {
@@ -554,10 +541,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
         animationHelper!!.setOnBasketAnimationEndListener(onBasketAnimationEndListener)
     }
 
-    fun setSoundEnabled(isEnabled: Boolean) {
-        isSoundEnabled = isEnabled
-    }
-
     fun setLessThanSecondAllowed(isAllowed: Boolean) {
         isLessThanSecondAllowed = isAllowed
     }
@@ -566,27 +549,8 @@ class RecordView : RelativeLayout, RecordLockViewListener {
         slideToCancel!!.text = text
     }
 
-    fun setSlideToCancelTextColor(color: Int) {
-        slideToCancel!!.setTextColor(color)
-    }
-
     fun setSmallMicColor(color: Int) {
         smallBlinkingMic!!.setColorFilter(color)
-    }
-
-    fun setSmallMicIcon(icon: Int) {
-        smallBlinkingMic!!.setImageResource(icon)
-    }
-
-    fun setCustomSounds(startSound: Int, finishedSound: Int, errorSound: Int) {
-        //0 means do not play sound
-        RECORD_START = startSound
-        RECORD_FINISHED = finishedSound
-        RECORD_ERROR = errorSound
-    }
-
-    fun getCancelBounds(): Float {
-        return cancelBounds
     }
 
     fun setCancelBounds(cancelBounds: Float) {
@@ -610,19 +574,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
             cancelBounds
         }
         this.cancelBounds = bounds
-    }
-
-    fun isRecordButtonGrowingAnimationEnabled(): Boolean {
-        return isRecordButtonGrowingAnimationEnabled
-    }
-
-    fun setRecordButtonGrowingAnimationEnabled(recordButtonGrowingAnimationEnabled: Boolean) {
-        isRecordButtonGrowingAnimationEnabled = recordButtonGrowingAnimationEnabled
-        animationHelper!!.setRecordButtonGrowingAnimationEnabled(recordButtonGrowingAnimationEnabled)
-    }
-
-    fun setTrashIconColor(color: Int) {
-        animationHelper!!.setTrashIconColor(color)
     }
 
     fun setRecordLockImageView(recordLockView: RecordLockView?) {

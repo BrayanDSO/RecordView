@@ -21,8 +21,7 @@ import androidx.vectordrawable.graphics.drawable.AnimatorInflaterCompat
 class AnimationHelper(
     context: Context,
     basketImg: ImageView,
-    smallBlinkingMic: ImageView?,
-    recordButtonGrowingAnimationEnabled: Boolean
+    smallBlinkingMic: ImageView?
 ) {
     private val context: Context?
     private val animatedVectorDrawable: AnimatedVectorDrawableCompat?
@@ -39,7 +38,6 @@ class AnimationHelper(
     private var translateAnimation2: TranslateAnimation? = null
     private var handler1: Handler? = null
     private var handler2: Handler? = null
-    private var recordButtonGrowingAnimationEnabled: Boolean
 
 
     init {
@@ -48,15 +46,10 @@ class AnimationHelper(
         this.basketImg = basketImg
         animatedVectorDrawable =
             AnimatedVectorDrawableCompat.create(context, R.drawable.recv_basket_animated)
-        this.recordButtonGrowingAnimationEnabled = recordButtonGrowingAnimationEnabled
     }
 
     fun setTrashIconColor(color: Int) {
         animatedVectorDrawable!!.setColorFilter(color, PorterDuff.Mode.SRC_IN)
-    }
-
-    fun setRecordButtonGrowingAnimationEnabled(recordButtonGrowingAnimationEnabled: Boolean) {
-        this.recordButtonGrowingAnimationEnabled = recordButtonGrowingAnimationEnabled
     }
 
     @SuppressLint("RestrictedApi")
@@ -210,9 +203,7 @@ class AnimationHelper(
             }
         })
 
-        if (recordButtonGrowingAnimationEnabled) {
-            recordBtn.stopScale()
-        }
+        recordBtn.stopScale()
         positionAnimator.setDuration(0)
         positionAnimator.start()
 
