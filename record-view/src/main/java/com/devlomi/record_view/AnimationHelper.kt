@@ -1,257 +1,248 @@
-package com.devlomi.record_view;
+package com.devlomi.record_view
 
-import android.animation.AnimatorSet;
-import android.animation.ValueAnimator;
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.graphics.PorterDuff;
-import android.os.Handler;
-import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.TranslateAnimation;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
+import android.animation.AnimatorSet
+import android.animation.ValueAnimator
+import android.animation.ValueAnimator.AnimatorUpdateListener
+import android.annotation.SuppressLint
+import android.content.Context
+import android.graphics.PorterDuff
+import android.os.Handler
+import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
+import android.view.animation.Animation.AnimationListener
+import android.view.animation.TranslateAnimation
+import android.widget.FrameLayout
+import android.widget.ImageView
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
+import androidx.vectordrawable.graphics.drawable.AnimatorInflaterCompat
 
-import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
-import androidx.vectordrawable.graphics.drawable.AnimatorInflaterCompat;
+class AnimationHelper(
+    context: Context,
+    basketImg: ImageView,
+    smallBlinkingMic: ImageView?,
+    recordButtonGrowingAnimationEnabled: Boolean
+) {
+    private val context: Context?
+    private val animatedVectorDrawable: AnimatedVectorDrawableCompat?
+    private val basketImg: ImageView?
+    private val smallBlinkingMic: ImageView?
+    private var alphaAnimation: AlphaAnimation? = null
+    private var onBasketAnimationEndListener: OnBasketAnimationEnd? = null
+    private var isBasketAnimating = false
+    private var isStartRecorded = false
+    private var micX = 0f
+    private var micY = 0f
+    private var micAnimation: AnimatorSet? = null
+    private var translateAnimation1: TranslateAnimation? = null
+    private var translateAnimation2: TranslateAnimation? = null
+    private var handler1: Handler? = null
+    private var handler2: Handler? = null
+    private var recordButtonGrowingAnimationEnabled: Boolean
 
-import static android.view.View.INVISIBLE;
-import static android.view.View.VISIBLE;
 
-public class AnimationHelper {
-    private Context context;
-    private AnimatedVectorDrawableCompat animatedVectorDrawable;
-    private ImageView basketImg, smallBlinkingMic;
-    private AlphaAnimation alphaAnimation;
-    private OnBasketAnimationEnd onBasketAnimationEndListener;
-    private boolean isBasketAnimating, isStartRecorded = false;
-    private float micX, micY = 0;
-    private AnimatorSet micAnimation;
-    private TranslateAnimation translateAnimation1, translateAnimation2;
-    private Handler handler1, handler2;
-    private boolean recordButtonGrowingAnimationEnabled;
-
-
-    public AnimationHelper(Context context, ImageView basketImg, ImageView smallBlinkingMic, boolean recordButtonGrowingAnimationEnabled) {
-        this.context = context;
-        this.smallBlinkingMic = smallBlinkingMic;
-        this.basketImg = basketImg;
-        animatedVectorDrawable = AnimatedVectorDrawableCompat.create(context, R.drawable.recv_basket_animated);
-        this.recordButtonGrowingAnimationEnabled = recordButtonGrowingAnimationEnabled;
+    init {
+        this.context = context
+        this.smallBlinkingMic = smallBlinkingMic
+        this.basketImg = basketImg
+        animatedVectorDrawable =
+            AnimatedVectorDrawableCompat.create(context, R.drawable.recv_basket_animated)
+        this.recordButtonGrowingAnimationEnabled = recordButtonGrowingAnimationEnabled
     }
 
-    public void setTrashIconColor(int color) {
-        animatedVectorDrawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+    fun setTrashIconColor(color: Int) {
+        animatedVectorDrawable!!.setColorFilter(color, PorterDuff.Mode.SRC_IN)
     }
 
-    public void setRecordButtonGrowingAnimationEnabled(boolean recordButtonGrowingAnimationEnabled) {
-        this.recordButtonGrowingAnimationEnabled = recordButtonGrowingAnimationEnabled;
+    fun setRecordButtonGrowingAnimationEnabled(recordButtonGrowingAnimationEnabled: Boolean) {
+        this.recordButtonGrowingAnimationEnabled = recordButtonGrowingAnimationEnabled
     }
 
     @SuppressLint("RestrictedApi")
-    public void animateBasket(float basketInitialY) {
-        isBasketAnimating = true;
+    fun animateBasket(basketInitialY: Float) {
+        isBasketAnimating = true
 
-        clearAlphaAnimation(false);
+        clearAlphaAnimation(false)
 
         //save initial x,y values for mic icon
-        if (micX == 0) {
-            micX = smallBlinkingMic.getX();
-            micY = smallBlinkingMic.getY();
+        if (micX == 0f) {
+            micX = smallBlinkingMic!!.getX()
+            micY = smallBlinkingMic.getY()
         }
 
 
-        micAnimation = (AnimatorSet) AnimatorInflaterCompat.loadAnimator(context, R.animator.delete_mic_animation);
-        micAnimation.setTarget(smallBlinkingMic); // set the view you want to animate
+        micAnimation = AnimatorInflaterCompat.loadAnimator(
+            context,
+            R.animator.delete_mic_animation
+        ) as AnimatorSet
+        micAnimation!!.setTarget(smallBlinkingMic) // set the view you want to animate
 
 
-        translateAnimation1 = new TranslateAnimation(0, 0, basketInitialY, basketInitialY - 90);
-        translateAnimation1.setDuration(250);
+        translateAnimation1 = TranslateAnimation(0f, 0f, basketInitialY, basketInitialY - 90)
+        translateAnimation1!!.setDuration(250)
 
-        translateAnimation2 = new TranslateAnimation(0, 0, basketInitialY - 130, basketInitialY);
-        translateAnimation2.setDuration(350);
+        translateAnimation2 = TranslateAnimation(0f, 0f, basketInitialY - 130, basketInitialY)
+        translateAnimation2!!.setDuration(350)
 
 
-        micAnimation.start();
-        basketImg.setImageDrawable(animatedVectorDrawable);
+        micAnimation!!.start()
+        basketImg!!.setImageDrawable(animatedVectorDrawable)
 
-        handler1 = new Handler();
-        handler1.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                basketImg.setVisibility(VISIBLE);
-                basketImg.startAnimation(translateAnimation1);
+        handler1 = Handler()
+        handler1!!.postDelayed(object : Runnable {
+            override fun run() {
+                basketImg.setVisibility(View.VISIBLE)
+                basketImg.startAnimation(translateAnimation1)
             }
-        }, 350);
+        }, 350)
 
-        translateAnimation1.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
+        translateAnimation1!!.setAnimationListener(object : AnimationListener {
+            override fun onAnimationStart(animation: Animation?) {
             }
 
-            @Override
-            public void onAnimationEnd(Animation animation) {
-
-                animatedVectorDrawable.start();
-                handler2 = new Handler();
-                handler2.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        basketImg.startAnimation(translateAnimation2);
-                        smallBlinkingMic.setVisibility(INVISIBLE);
-                        basketImg.setVisibility(INVISIBLE);
+            override fun onAnimationEnd(animation: Animation?) {
+                animatedVectorDrawable!!.start()
+                handler2 = Handler()
+                handler2!!.postDelayed(object : Runnable {
+                    override fun run() {
+                        basketImg.startAnimation(translateAnimation2)
+                        smallBlinkingMic!!.setVisibility(View.INVISIBLE)
+                        basketImg.setVisibility(View.INVISIBLE)
                     }
-                }, 450);
-
-
+                }, 450)
             }
 
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
+            override fun onAnimationRepeat(animation: Animation?) {
             }
-        });
+        })
 
 
-        translateAnimation2.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
+        translateAnimation2!!.setAnimationListener(object : AnimationListener {
+            override fun onAnimationStart(animation: Animation?) {
             }
 
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                basketImg.setVisibility(INVISIBLE);
+            override fun onAnimationEnd(animation: Animation?) {
+                basketImg.setVisibility(View.INVISIBLE)
 
-                isBasketAnimating = false;
+                isBasketAnimating = false
 
                 //if the user pressed the record button while the animation is running
                 // then do NOT call on Animation end
                 if (onBasketAnimationEndListener != null && !isStartRecorded) {
-                    onBasketAnimationEndListener.onAnimationEnd();
+                    onBasketAnimationEndListener!!.onAnimationEnd()
                 }
             }
 
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
+            override fun onAnimationRepeat(animation: Animation?) {
             }
-        });
-
-
+        })
     }
 
 
     //if the user started a new Record while the Animation is running
     // then we want to stop the current animation and revert views back to default state
-    public void resetBasketAnimation() {
+    fun resetBasketAnimation() {
         if (isBasketAnimating) {
+            translateAnimation1!!.reset()
+            translateAnimation1!!.cancel()
+            translateAnimation2!!.reset()
+            translateAnimation2!!.cancel()
 
-            translateAnimation1.reset();
-            translateAnimation1.cancel();
-            translateAnimation2.reset();
-            translateAnimation2.cancel();
+            micAnimation!!.cancel()
 
-            micAnimation.cancel();
-
-            smallBlinkingMic.clearAnimation();
-            basketImg.clearAnimation();
-
-
-            if (handler1 != null)
-                handler1.removeCallbacksAndMessages(null);
-            if (handler2 != null)
-                handler2.removeCallbacksAndMessages(null);
-
-            basketImg.setVisibility(INVISIBLE);
-            smallBlinkingMic.setX(micX);
-            smallBlinkingMic.setY(micY);
-            smallBlinkingMic.setVisibility(View.GONE);
-
-            isBasketAnimating = false;
+            smallBlinkingMic!!.clearAnimation()
+            basketImg!!.clearAnimation()
 
 
+            if (handler1 != null) handler1!!.removeCallbacksAndMessages(null)
+            if (handler2 != null) handler2!!.removeCallbacksAndMessages(null)
+
+            basketImg.setVisibility(View.INVISIBLE)
+            smallBlinkingMic.setX(micX)
+            smallBlinkingMic.setY(micY)
+            smallBlinkingMic.setVisibility(View.GONE)
+
+            isBasketAnimating = false
         }
     }
 
-   public void clearAlphaAnimation(boolean hideView) {
+    fun clearAlphaAnimation(hideView: Boolean) {
         if (alphaAnimation != null) {
-            alphaAnimation.cancel();
-            alphaAnimation.reset();
+            alphaAnimation!!.cancel()
+            alphaAnimation!!.reset()
         }
         if (smallBlinkingMic != null) {
-            smallBlinkingMic.clearAnimation();
+            smallBlinkingMic.clearAnimation()
             if (hideView) {
-                smallBlinkingMic.setVisibility(View.GONE);
+                smallBlinkingMic.setVisibility(View.GONE)
             }
         }
     }
 
-    public void animateSmallMicAlpha() {
-        alphaAnimation = new AlphaAnimation(0.0f, 1.0f);
-        alphaAnimation.setDuration(500);
-        alphaAnimation.setRepeatMode(Animation.REVERSE);
-        alphaAnimation.setRepeatCount(Animation.INFINITE);
-        smallBlinkingMic.startAnimation(alphaAnimation);
+    fun animateSmallMicAlpha() {
+        alphaAnimation = AlphaAnimation(0.0f, 1.0f)
+        alphaAnimation!!.setDuration(500)
+        alphaAnimation!!.setRepeatMode(Animation.REVERSE)
+        alphaAnimation!!.setRepeatCount(Animation.INFINITE)
+        smallBlinkingMic!!.startAnimation(alphaAnimation)
     }
 
-    public void moveRecordButtonAndSlideToCancelBack(final RecordButton recordBtn, FrameLayout slideToCancelLayout, float initialX, float initialY, float difX, boolean setY) {
+    fun moveRecordButtonAndSlideToCancelBack(
+        recordBtn: RecordButton,
+        slideToCancelLayout: FrameLayout,
+        initialX: Float,
+        initialY: Float,
+        difX: Float,
+        setY: Boolean
+    ) {
+        val positionAnimator =
+            ValueAnimator.ofFloat(recordBtn.getX(), initialX)
 
-        final ValueAnimator positionAnimator =
-                ValueAnimator.ofFloat(recordBtn.getX(), initialX);
-
-        positionAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
-        positionAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float x = (Float) animation.getAnimatedValue();
-                recordBtn.setX(x);
+        positionAnimator.setInterpolator(AccelerateDecelerateInterpolator())
+        positionAnimator.addUpdateListener(object : AnimatorUpdateListener {
+            override fun onAnimationUpdate(animation: ValueAnimator) {
+                val x = animation.getAnimatedValue() as Float
+                recordBtn.setX(x)
                 if (setY) {
-                    recordBtn.setY(initialY);
+                    recordBtn.setY(initialY)
                 }
             }
-        });
+        })
 
         if (recordButtonGrowingAnimationEnabled) {
-            recordBtn.stopScale();
+            recordBtn.stopScale()
         }
-        positionAnimator.setDuration(0);
-        positionAnimator.start();
+        positionAnimator.setDuration(0)
+        positionAnimator.start()
 
 
         // if the move event was not called ,then the difX will still 0 and there is no need to move it back
-        if (difX != 0) {
-            float x = initialX - difX;
+        if (difX != 0f) {
+            val x = initialX - difX
             slideToCancelLayout.animate()
-                    .x(x)
-                    .setDuration(0)
-                    .start();
+                .x(x)
+                .setDuration(0)
+                .start()
         }
-
-
     }
 
-    public void resetSmallMic() {
-        smallBlinkingMic.setAlpha(1.0f);
-        smallBlinkingMic.setScaleX(1.0f);
-        smallBlinkingMic.setScaleY(1.0f);
+    fun resetSmallMic() {
+        smallBlinkingMic!!.setAlpha(1.0f)
+        smallBlinkingMic.setScaleX(1.0f)
+        smallBlinkingMic.setScaleY(1.0f)
     }
 
-    public void setOnBasketAnimationEndListener(OnBasketAnimationEnd onBasketAnimationEndListener) {
-        this.onBasketAnimationEndListener = onBasketAnimationEndListener;
-
+    fun setOnBasketAnimationEndListener(onBasketAnimationEndListener: OnBasketAnimationEnd?) {
+        this.onBasketAnimationEndListener = onBasketAnimationEndListener
     }
 
-    protected void onAnimationEnd() {
-        if (onBasketAnimationEndListener != null)
-            onBasketAnimationEndListener.onAnimationEnd();
+    fun onAnimationEnd() {
+        if (onBasketAnimationEndListener != null) onBasketAnimationEndListener!!.onAnimationEnd()
     }
 
     //check if the user started a new Record by pressing the RecordButton
-    public void setStartRecorded(boolean startRecorded) {
-        isStartRecorded = startRecorded;
+    fun setStartRecorded(startRecorded: Boolean) {
+        isStartRecorded = startRecorded
     }
-
 }
