@@ -17,6 +17,7 @@ import android.view.animation.AnticipateInterpolator
 import android.view.animation.DecelerateInterpolator
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.util.TypedValueCompat
+import androidx.core.graphics.toColorInt
 
 class RecordLockView : View {
     private var bottomLockDrawable: Drawable? = null
@@ -24,8 +25,8 @@ class RecordLockView : View {
     private var context: Context? = null
     var recordLockViewListener: RecordLockViewListener? = null
 
-    private var defaultCircleColor = Color.parseColor("#0A81AB")
-    private var circleLockedColor = Color.parseColor("#314E52")
+    private var defaultCircleColor = "#0A81AB".toColorInt()
+    private var circleLockedColor = "#314E52".toColorInt()
     private var circleColor = defaultCircleColor
     private var recordLockAlpha = 255
     private var lockColor = Color.WHITE
@@ -89,17 +90,13 @@ class RecordLockView : View {
 
             if (lockColor != -1) {
                 this.lockColor = lockColor
-                bottomLockDrawable!!.setColorFilter(
-                    PorterDuffColorFilter(
-                        lockColor,
-                        PorterDuff.Mode.SRC_IN
-                    )
+                bottomLockDrawable!!.colorFilter = PorterDuffColorFilter(
+                    lockColor,
+                    PorterDuff.Mode.SRC_IN
                 )
-                topLockDrawable!!.setColorFilter(
-                    PorterDuffColorFilter(
-                        lockColor,
-                        PorterDuff.Mode.SRC_IN
-                    )
+                topLockDrawable!!.colorFilter = PorterDuffColorFilter(
+                    lockColor,
+                    PorterDuff.Mode.SRC_IN
                 )
             }
         }
@@ -108,15 +105,13 @@ class RecordLockView : View {
 
     private fun animateAlpha() {
         val valueAnimator = ValueAnimator.ofInt(255, 0)
-        valueAnimator.addUpdateListener(object : AnimatorUpdateListener {
-            override fun onAnimationUpdate(animation: ValueAnimator) {
-                val animatedValue = animation.getAnimatedValue() as Int
-                recordLockAlpha = animatedValue
-                invalidate()
-            }
-        })
+        valueAnimator.addUpdateListener { animation ->
+            val animatedValue = animation.getAnimatedValue() as Int
+            recordLockAlpha = animatedValue
+            invalidate()
+        }
         valueAnimator.setDuration(700)
-        valueAnimator.setInterpolator(AnticipateInterpolator())
+        valueAnimator.interpolator = AnticipateInterpolator()
         valueAnimator.start()
     }
 
@@ -140,7 +135,7 @@ class RecordLockView : View {
         val topLockFraction = (fraction + 0.25).toFloat()
 
         //resize topLock
-        val topLockDrawableHeight = (topLockDrawable!!.getIntrinsicHeight() / 2.0).toInt()
+        val topLockDrawableHeight = (topLockDrawable!!.intrinsicHeight / 2.0).toInt()
 
         val startTop = initialTopLockTop
         val endTop = (bottomLockRect!!.top - topLockDrawableHeight).toFloat()
@@ -199,8 +194,8 @@ class RecordLockView : View {
         super.onDraw(canvas)
 
 
-        val cx = getWidth() / 2
-        val cy = getHeight() / 2
+        val cx = width / 2
+        val cy = height / 2
 
         val height = getHeight()
 
@@ -208,13 +203,13 @@ class RecordLockView : View {
         val paint = Paint()
         paint.setColor(circleColor)
         paint.setAlpha(recordLockAlpha)
-        paint.setAntiAlias(true)
+        paint.isAntiAlias = true
 
-        canvas.drawCircle(cx.toFloat(), cy.toFloat(), getMeasuredWidth() / 2 + fourDp, paint)
+        canvas.drawCircle(cx.toFloat(), cy.toFloat(), measuredWidth / 2 + fourDp, paint)
 
 
-        val drawableWidth = (bottomLockDrawable!!.getIntrinsicWidth() / 1.5).toInt()
-        val drawableHeight = (bottomLockDrawable!!.getIntrinsicHeight() / 2.0).toInt()
+        val drawableWidth = (bottomLockDrawable!!.intrinsicWidth / 1.5).toInt()
+        val drawableHeight = (bottomLockDrawable!!.intrinsicHeight / 2.0).toInt()
 
 
         val bottomLockRect = Rect(
@@ -228,10 +223,10 @@ class RecordLockView : View {
             this.bottomLockRect = bottomLockRect
         }
 
-        bottomLockDrawable!!.setBounds(bottomLockRect)
+        bottomLockDrawable!!.bounds = bottomLockRect
 
 
-        val topLockDrawableHeight = (topLockDrawable!!.getIntrinsicHeight() / 1.3).toInt()
+        val topLockDrawableHeight = (topLockDrawable!!.intrinsicHeight / 1.3).toInt()
 
 
         if (topLockTop == 0f) {
@@ -270,13 +265,11 @@ class RecordLockView : View {
 
     fun setLockColor(lockColor: Int) {
         this.lockColor = lockColor
-        bottomLockDrawable!!.setColorFilter(
-            PorterDuffColorFilter(
-                lockColor,
-                PorterDuff.Mode.SRC_IN
-            )
+        bottomLockDrawable!!.colorFilter = PorterDuffColorFilter(
+            lockColor,
+            PorterDuff.Mode.SRC_IN
         )
-        topLockDrawable!!.setColorFilter(PorterDuffColorFilter(lockColor, PorterDuff.Mode.SRC_IN))
+        topLockDrawable!!.colorFilter = PorterDuffColorFilter(lockColor, PorterDuff.Mode.SRC_IN)
         invalidate()
     }
 }

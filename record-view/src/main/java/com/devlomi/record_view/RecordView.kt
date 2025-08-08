@@ -441,7 +441,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
 
     private fun switchToLockedMode() {
         cancelTextView!!.visibility = VISIBLE
-        slideToCancelLayout!!.setVisibility(GONE)
+        slideToCancelLayout!!.visibility = GONE
 
         recordButton!!.animate()
             .x(initialRecordButtonX)
