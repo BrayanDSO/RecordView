@@ -105,7 +105,7 @@ class RecordButton : AppCompatImageView, View.OnClickListener {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> recordView!!.onActionDown(this)
                 MotionEvent.ACTION_MOVE -> recordView!!.onActionMove(this, event)
-                MotionEvent.ACTION_UP -> recordView!!.onActionUp(this)
+                MotionEvent.ACTION_UP -> recordView!!.onActionUp()
             }
         }
 

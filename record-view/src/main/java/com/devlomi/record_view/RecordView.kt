@@ -412,7 +412,7 @@ class RecordView : RelativeLayout, RecordLockViewListener {
         return false
     }
 
-    fun onActionUp(recordBtn: RecordButton?) {
+    fun onActionUp() {
         if (!isPermissionGranted || fractionReached) {
             return
         }
