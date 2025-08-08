@@ -1,195 +1,175 @@
-package com.devlomi.recordview;
+package com.devlomi.recordview
 
-import static androidx.core.content.PermissionChecker.PERMISSION_GRANTED;
+import android.Manifest
+import android.graphics.Color
+import android.os.Build
+import android.os.Bundle
+import android.util.Log
+import android.view.View
+import android.widget.Button
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.PermissionChecker
+import com.devlomi.record_view.OnBasketAnimationEnd
+import com.devlomi.record_view.OnRecordClickListener
+import com.devlomi.record_view.OnRecordListener
+import com.devlomi.record_view.RecordButton
+import com.devlomi.record_view.RecordPermissionHandler
+import com.devlomi.record_view.RecordView
+import java.io.File
+import java.io.IOException
+import java.util.UUID
+import java.util.concurrent.TimeUnit
 
-import android.Manifest;
-import android.graphics.Color;
-import android.os.Build;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.Toast;
+class MainActivity : AppCompatActivity() {
+    private var audioRecorder: AudioRecorder? = null
+    private var recordFile: File? = null
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-import com.devlomi.record_view.OnBasketAnimationEnd;
-import com.devlomi.record_view.OnRecordClickListener;
-import com.devlomi.record_view.OnRecordListener;
-import com.devlomi.record_view.RecordButton;
-import com.devlomi.record_view.RecordPermissionHandler;
-import com.devlomi.record_view.RecordView;
+        audioRecorder = AudioRecorder()
 
-import java.io.File;
-import java.io.IOException;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-public class MainActivity extends AppCompatActivity {
-
-    private AudioRecorder audioRecorder;
-    private File recordFile;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        audioRecorder = new AudioRecorder();
-
-        RecordView recordView = findViewById(R.id.record_view);
-        final RecordButton recordButton = findViewById(R.id.record_button);
-        Button btnChangeOnclick = findViewById(R.id.btn_change_onclick);
+        val recordView = findViewById<RecordView>(R.id.record_view)
+        val recordButton = findViewById<RecordButton>(R.id.record_button)
+        val btnChangeOnclick = findViewById<Button>(R.id.btn_change_onclick)
 
         // To Enable Record Lock
 //        recordView.setLockEnabled(true);
 //        recordView.setRecordLockImageView(findViewById(R.id.record_lock));
         //IMPORTANT
-        recordButton.setRecordView(recordView);
+        recordButton.setRecordView(recordView)
 
         // if you want to click the button (in case if you want to make the record button a Send Button for example..)
 //        recordButton.setListenForRecord(false);
-
-        btnChangeOnclick.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if (recordButton.isListenForRecord()) {
-                    recordButton.setListenForRecord(false);
-                    Toast.makeText(MainActivity.this, "onClickEnabled", Toast.LENGTH_SHORT).show();
+        btnChangeOnclick.setOnClickListener(object : View.OnClickListener {
+            override fun onClick(v: View?) {
+                if (recordButton.isListenForRecord) {
+                    recordButton.isListenForRecord = false
+                    Toast.makeText(this@MainActivity, "onClickEnabled", Toast.LENGTH_SHORT).show()
                 } else {
-                    recordButton.setListenForRecord(true);
-                    Toast.makeText(MainActivity.this, "onClickDisabled", Toast.LENGTH_SHORT).show();
+                    recordButton.isListenForRecord = true
+                    Toast.makeText(this@MainActivity, "onClickDisabled", Toast.LENGTH_SHORT).show()
                 }
             }
-        });
+        })
 
         //ListenForRecord must be false ,otherwise onClick will not be called
-        recordButton.setOnRecordClickListener(new OnRecordClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "RECORD BUTTON CLICKED", Toast.LENGTH_SHORT).show();
-                Log.d("RecordButton", "RECORD BUTTON CLICKED");
+        recordButton.setOnRecordClickListener(object : OnRecordClickListener {
+            override fun onClick(v: View?) {
+                Toast.makeText(this@MainActivity, "RECORD BUTTON CLICKED", Toast.LENGTH_SHORT)
+                    .show()
+                Log.d("RecordButton", "RECORD BUTTON CLICKED")
             }
-        });
+        })
 
 
         //Cancel Bounds is when the Slide To Cancel text gets before the timer . default is 8
-        recordView.setCancelBounds(8);
+        recordView.setCancelBounds(8f)
 
 
-        recordView.setSmallMicColor(Color.parseColor("#c2185b"));
+        recordView.setSmallMicColor(Color.parseColor("#c2185b"))
 
         //prevent recording under one Second
-        recordView.setLessThanSecondAllowed(false);
+        recordView.setLessThanSecondAllowed(false)
 
 
-        recordView.setSlideToCancelText("Slide To Cancel");
+        recordView.setSlideToCancelText("Slide To Cancel")
 
 
         // recordView.setCustomSounds(R.raw.record_start, R.raw.record_finished, 0);
-
-
-        recordView.setOnRecordListener(new OnRecordListener() {
-            @Override
-            public void onStart() {
-                recordFile = new File(getFilesDir(), UUID.randomUUID().toString() + ".3gp");
+        recordView.setOnRecordListener(object : OnRecordListener {
+            override fun onStart() {
+                recordFile = File(getFilesDir(), UUID.randomUUID().toString() + ".3gp")
                 try {
-                    audioRecorder.start(recordFile.getPath());
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    audioRecorder!!.start(recordFile!!.getPath())
+                } catch (e: IOException) {
+                    e.printStackTrace()
                 }
-                Log.d("RecordView", "onStart");
-                Toast.makeText(MainActivity.this, "OnStartRecord", Toast.LENGTH_SHORT).show();
-
+                Log.d("RecordView", "onStart")
+                Toast.makeText(this@MainActivity, "OnStartRecord", Toast.LENGTH_SHORT).show()
             }
 
-            @Override
-            public void onCancel() {
-                stopRecording(true);
+            override fun onCancel() {
+                stopRecording(true)
 
-                Toast.makeText(MainActivity.this, "onCancel", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this@MainActivity, "onCancel", Toast.LENGTH_SHORT).show()
 
-                Log.d("RecordView", "onCancel");
-
+                Log.d("RecordView", "onCancel")
             }
 
-            @Override
-            public void onFinish(long recordTime, boolean limitReached) {
-                stopRecording(false);
+            override fun onFinish(recordTime: Long, limitReached: Boolean) {
+                stopRecording(false)
 
 
-                String time = getHumanTimeText(recordTime);
-                Toast.makeText(MainActivity.this, "onFinishRecord - Recorded Time is: " + time + " File saved at " + recordFile.getPath(), Toast.LENGTH_SHORT).show();
-                Log.d("RecordView", "onFinish" + " Limit Reached? " + limitReached);
-                Log.d("RecordTime", time);
+                val time = getHumanTimeText(recordTime)
+                Toast.makeText(
+                    this@MainActivity,
+                    "onFinishRecord - Recorded Time is: " + time + " File saved at " + recordFile!!.getPath(),
+                    Toast.LENGTH_SHORT
+                ).show()
+                Log.d("RecordView", "onFinish" + " Limit Reached? " + limitReached)
+                Log.d("RecordTime", time)
             }
 
-            @Override
-            public void onLessThanSecond() {
-                stopRecording(true);
+            override fun onLessThanSecond() {
+                stopRecording(true)
 
-                Toast.makeText(MainActivity.this, "OnLessThanSecond", Toast.LENGTH_SHORT).show();
-                Log.d("RecordView", "onLessThanSecond");
+                Toast.makeText(this@MainActivity, "OnLessThanSecond", Toast.LENGTH_SHORT).show()
+                Log.d("RecordView", "onLessThanSecond")
             }
 
-            @Override
-            public void onLock() {
-                Toast.makeText(MainActivity.this, "onLock", Toast.LENGTH_SHORT).show();
-                Log.d("RecordView", "onLock");
+            override fun onLock() {
+                Toast.makeText(this@MainActivity, "onLock", Toast.LENGTH_SHORT).show()
+                Log.d("RecordView", "onLock")
             }
-        });
+        })
 
 
-        recordView.setOnBasketAnimationEndListener(new OnBasketAnimationEnd() {
-            @Override
-            public void onAnimationEnd() {
-                Log.d("RecordView", "Basket Animation Finished");
+        recordView.setOnBasketAnimationEndListener(object : OnBasketAnimationEnd {
+            override fun onAnimationEnd() {
+                Log.d("RecordView", "Basket Animation Finished")
             }
-        });
+        })
 
-        recordView.setRecordPermissionHandler(new RecordPermissionHandler() {
-            @Override
-            public boolean isPermissionGranted() {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                    return true;
+        recordView.setRecordPermissionHandler(object : RecordPermissionHandler {
+            override val isPermissionGranted: Boolean
+                get() {
+                    val recordPermissionAvailable = ContextCompat.checkSelfPermission(
+                        this@MainActivity,
+                        Manifest.permission.RECORD_AUDIO
+                    ) == PermissionChecker.PERMISSION_GRANTED
+                    if (recordPermissionAvailable) {
+                        return true
+                    }
+
+
+                    ActivityCompat.requestPermissions(this@MainActivity,
+                        arrayOf<String>(Manifest.permission.RECORD_AUDIO),
+                        0)
+
+                    return false
                 }
-
-                boolean recordPermissionAvailable = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO) == PERMISSION_GRANTED;
-                if (recordPermissionAvailable) {
-                    return true;
-                }
-
-
-                ActivityCompat.
-                        requestPermissions(MainActivity.this,
-                                new String[]{Manifest.permission.RECORD_AUDIO},
-                                0);
-
-                return false;
-
-            }
-        });
-
-
+        })
     }
 
-    private void stopRecording(boolean deleteFile) {
-        audioRecorder.stop();
+    private fun stopRecording(deleteFile: Boolean) {
+        audioRecorder!!.stop()
         if (recordFile != null && deleteFile) {
-            recordFile.delete();
+            recordFile!!.delete()
         }
     }
 
 
-    private String getHumanTimeText(long milliseconds) {
-        return String.format("%02d:%02d",
-                TimeUnit.MILLISECONDS.toMinutes(milliseconds),
-                TimeUnit.MILLISECONDS.toSeconds(milliseconds) -
-                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(milliseconds)));
+    private fun getHumanTimeText(milliseconds: Long): String {
+        return String.format(
+            "%02d:%02d",
+            TimeUnit.MILLISECONDS.toMinutes(milliseconds),
+            TimeUnit.MILLISECONDS.toSeconds(milliseconds) -
+                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(milliseconds))
+        )
     }
-
-
 }

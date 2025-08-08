@@ -1,47 +1,41 @@
-package com.devlomi.record_view;
+package com.devlomi.record_view
 
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
-import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
+import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 
 /**
  * Created by Devlomi on 13/12/2017.
  */
+class ScaleAnim(private val view: View?) {
+    private var scaleUpTo = 2.0f
 
-public class ScaleAnim {
-    private View view;
-    private float scaleUpTo = 2.0f;
-
-    public ScaleAnim(View view) {
-        this.view = view;
+    fun setScaleUpTo(scaleUpTo: Float) {
+        this.scaleUpTo = scaleUpTo
     }
 
-    public void setScaleUpTo(float scaleUpTo) {
-        this.scaleUpTo = scaleUpTo;
+    fun start() {
+        val set = AnimatorSet()
+
+        val scaleY = ObjectAnimator.ofFloat(view, "scaleY", scaleUpTo)
+        val scaleX = ObjectAnimator.ofFloat(view, "scaleX", scaleUpTo)
+
+        set.setDuration(150)
+        set.setInterpolator(AccelerateDecelerateInterpolator())
+        set.playTogether(scaleY, scaleX)
+        set.start()
     }
 
-    void start() {
-        AnimatorSet set = new AnimatorSet();
+    fun stop() {
+        val set = AnimatorSet()
 
-        ObjectAnimator scaleY = ObjectAnimator.ofFloat(view, "scaleY", scaleUpTo);
-        ObjectAnimator scaleX = ObjectAnimator.ofFloat(view, "scaleX", scaleUpTo);
+        val scaleY = ObjectAnimator.ofFloat(view, "scaleY", 1.0f)
+        val scaleX = ObjectAnimator.ofFloat(view, "scaleX", 1.0f)
 
-        set.setDuration(150);
-        set.setInterpolator(new AccelerateDecelerateInterpolator());
-        set.playTogether(scaleY, scaleX);
-        set.start();
-    }
-
-    void stop() {
-        AnimatorSet set = new AnimatorSet();
-
-        ObjectAnimator scaleY = ObjectAnimator.ofFloat(view, "scaleY", 1.0f);
-        ObjectAnimator scaleX = ObjectAnimator.ofFloat(view, "scaleX", 1.0f);
-
-        set.setDuration(150);
-        set.setInterpolator(new AccelerateDecelerateInterpolator());
-        set.playTogether(scaleY, scaleX);
-        set.start();
+        set.setDuration(150)
+        set.setInterpolator(AccelerateDecelerateInterpolator())
+        set.playTogether(scaleY, scaleX)
+        set.start()
     }
 }

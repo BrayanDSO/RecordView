@@ -1,188 +1,164 @@
-package com.devlomi.record_view;
+package com.devlomi.record_view
 
-import android.content.Context;
-import android.content.res.TypedArray;
-import android.graphics.drawable.Drawable;
-import android.util.AttributeSet;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-
-import androidx.appcompat.content.res.AppCompatResources;
-import androidx.appcompat.widget.AppCompatImageView;
+import android.content.Context
+import android.graphics.drawable.Drawable
+import android.util.AttributeSet
+import android.view.MotionEvent
+import android.view.View
+import android.view.View.OnTouchListener
+import android.view.ViewGroup
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.appcompat.widget.AppCompatImageView
 
 /**
  * Created by Devlomi on 13/12/2017.
  */
+class RecordButton : AppCompatImageView, OnTouchListener, View.OnClickListener {
+    private var scaleAnim: ScaleAnim? = null
+    private var recordView: RecordView? = null
+    var isListenForRecord: Boolean = true
+    private var onRecordClickListener: OnRecordClickListener? = null
+    private var sendClickListener: OnRecordClickListener? = null
+    private var isInLockMode = false
+    private var micIcon: Drawable? = null
+    private var sendIcon: Drawable? = null
 
-public class RecordButton extends AppCompatImageView implements View.OnTouchListener, View.OnClickListener {
-
-    private ScaleAnim scaleAnim;
-    private RecordView recordView;
-    private boolean listenForRecord = true;
-    private OnRecordClickListener onRecordClickListener;
-    private OnRecordClickListener sendClickListener;
-    private boolean isInLockMode = false;
-    private Drawable micIcon, sendIcon;
-
-    public void setRecordView(RecordView recordView) {
-        this.recordView = recordView;
-        recordView.setRecordButton(this);
+    fun setRecordView(recordView: RecordView) {
+        this.recordView = recordView
+        recordView.setRecordButton(this)
     }
 
-    public RecordButton(Context context) {
-        super(context);
-        init(context, null);
+    constructor(context: Context) : super(context) {
+        init(context, null)
     }
 
-    public RecordButton(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(context, attrs);
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
+        init(context, attrs)
     }
 
-    public RecordButton(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init(context, attrs);
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    ) {
+        init(context, attrs)
     }
 
-    private void init(Context context, AttributeSet attrs) {
-        float scaleUpTo = 1f;
+    private fun init(context: Context, attrs: AttributeSet?) {
+        var scaleUpTo = 1f
         if (attrs != null) {
-            TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.RecordButton);
+            val typedArray = context.obtainStyledAttributes(attrs, R.styleable.RecordButton)
 
-            int imageResource = typedArray.getResourceId(R.styleable.RecordButton_mic_icon, -1);
-            int sendResource = typedArray.getResourceId(R.styleable.RecordButton_send_icon, -1);
-            scaleUpTo = typedArray.getFloat(R.styleable.RecordButton_scale_up_to, -1f);
+            val imageResource = typedArray.getResourceId(R.styleable.RecordButton_mic_icon, -1)
+            val sendResource = typedArray.getResourceId(R.styleable.RecordButton_send_icon, -1)
+            scaleUpTo = typedArray.getFloat(R.styleable.RecordButton_scale_up_to, -1f)
 
             if (imageResource != -1) {
-                setTheImageResource(imageResource);
+                setTheImageResource(imageResource)
             }
 
             if (sendResource != -1) {
-                sendIcon = AppCompatResources.getDrawable(getContext(), sendResource);
+                sendIcon = AppCompatResources.getDrawable(getContext(), sendResource)
             }
 
-            typedArray.recycle();
+            typedArray.recycle()
         }
 
-        scaleAnim = new ScaleAnim(this);
+        scaleAnim = ScaleAnim(this)
         if (scaleUpTo > 1) {
-            scaleAnim.setScaleUpTo(scaleUpTo);
+            scaleAnim!!.setScaleUpTo(scaleUpTo)
         }
 
-        this.setOnTouchListener(this);
-        this.setOnClickListener(this);
+        this.setOnTouchListener(this)
+        this.setOnClickListener(this)
     }
 
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        setClip(this);
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        setClip(this)
     }
 
-    public void setScaleUpTo(Float scaleTo) {
-        scaleAnim.setScaleUpTo(scaleTo);
+    fun setScaleUpTo(scaleTo: Float) {
+        scaleAnim!!.setScaleUpTo(scaleTo)
     }
 
-    public void setClip(View v) {
+    fun setClip(v: View) {
         if (v.getParent() == null) {
-            return;
+            return
         }
 
-        if (v instanceof ViewGroup) {
-            ((ViewGroup) v).setClipChildren(false);
-            ((ViewGroup) v).setClipToPadding(false);
+        if (v is ViewGroup) {
+            v.setClipChildren(false)
+            v.setClipToPadding(false)
         }
 
-        if (v.getParent() instanceof View) {
-            setClip((View) v.getParent());
+        if (v.getParent() is View) {
+            setClip((v.getParent() as android.view.View?)!!)
         }
     }
 
 
-    private void setTheImageResource(int imageResource) {
-        Drawable image = AppCompatResources.getDrawable(getContext(), imageResource);
-        setImageDrawable(image);
-        micIcon = image;
+    private fun setTheImageResource(imageResource: Int) {
+        val image = AppCompatResources.getDrawable(getContext(), imageResource)
+        setImageDrawable(image)
+        micIcon = image
     }
 
 
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        if (isListenForRecord()) {
-            switch (event.getAction()) {
-
-                case MotionEvent.ACTION_DOWN:
-                    recordView.onActionDown((RecordButton) v, event);
-                    break;
-
-
-                case MotionEvent.ACTION_MOVE:
-                    recordView.onActionMove((RecordButton) v, event);
-                    break;
-
-                case MotionEvent.ACTION_UP:
-                    recordView.onActionUp((RecordButton) v);
-                    break;
-
+    override fun onTouch(v: View?, event: MotionEvent): Boolean {
+        if (this.isListenForRecord) {
+            when (event.getAction()) {
+                MotionEvent.ACTION_DOWN -> recordView!!.onActionDown(v as RecordButton, event)
+                MotionEvent.ACTION_MOVE -> recordView!!.onActionMove(v as RecordButton, event)
+                MotionEvent.ACTION_UP -> recordView!!.onActionUp(v as RecordButton?)
             }
-
         }
 
-        return isListenForRecord();
+        return this.isListenForRecord
     }
 
 
-    protected void startScale() {
-        scaleAnim.start();
+    fun startScale() {
+        scaleAnim!!.start()
     }
 
-    protected void stopScale() {
-        scaleAnim.stop();
+    fun stopScale() {
+        scaleAnim!!.stop()
     }
 
-    public void setListenForRecord(boolean listenForRecord) {
-        this.listenForRecord = listenForRecord;
+    fun setOnRecordClickListener(onRecordClickListener: OnRecordClickListener?) {
+        this.onRecordClickListener = onRecordClickListener
     }
 
-    public boolean isListenForRecord() {
-        return listenForRecord;
+    fun setSendClickListener(sendClickListener: OnRecordClickListener?) {
+        this.sendClickListener = sendClickListener
     }
 
-    public void setOnRecordClickListener(OnRecordClickListener onRecordClickListener) {
-        this.onRecordClickListener = onRecordClickListener;
+    fun setInLockMode(inLockMode: Boolean) {
+        isInLockMode = inLockMode
     }
 
-    protected void setSendClickListener(OnRecordClickListener sendClickListener) {
-        this.sendClickListener = sendClickListener;
+    fun setSendIconResource(resource: Int) {
+        sendIcon = AppCompatResources.getDrawable(getContext(), resource)
     }
 
-    protected void setInLockMode(boolean inLockMode) {
-        isInLockMode = inLockMode;
-    }
-
-    public void setSendIconResource(int resource) {
-        sendIcon = AppCompatResources.getDrawable(getContext(), resource);
-    }
-
-    @Override
-    public void onClick(View v) {
+    override fun onClick(v: View?) {
         if (isInLockMode && sendClickListener != null) {
-            sendClickListener.onClick(v);
+            sendClickListener!!.onClick(v)
         } else if (onRecordClickListener != null) {
-            onRecordClickListener.onClick(v);
+            onRecordClickListener!!.onClick(v)
         }
     }
 
-    protected void changeIconToSend() {
+    fun changeIconToSend() {
         if (sendIcon != null) {
-            setImageDrawable(sendIcon);
+            setImageDrawable(sendIcon)
         }
     }
 
-    protected void changeIconToRecord() {
+    fun changeIconToRecord() {
         if (micIcon != null) {
-            setImageDrawable(micIcon);
+            setImageDrawable(micIcon)
         }
     }
 }

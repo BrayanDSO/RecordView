@@ -1,5 +1,5 @@
-package com.devlomi.record_view;
+package com.devlomi.record_view
 
-public interface RecordPermissionHandler {
-    boolean isPermissionGranted();
+interface RecordPermissionHandler {
+    val isPermissionGranted: Boolean
 }

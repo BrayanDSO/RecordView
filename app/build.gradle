@@ -8,7 +8,6 @@ android {
     }
 
     compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
     defaultConfig {
         applicationId "com.devlomi.recordview"
         minSdkVersion rootProject.ext.minSdkVersion

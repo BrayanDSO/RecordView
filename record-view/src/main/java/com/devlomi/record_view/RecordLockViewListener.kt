@@ -1,6 +1,6 @@
-package com.devlomi.record_view;
+package com.devlomi.record_view
 
 interface RecordLockViewListener {
-    void onFractionReached();
+    fun onFractionReached()
 }
 
