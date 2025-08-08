@@ -298,92 +298,86 @@ class RecordView : RelativeLayout, RecordLockViewListener {
 
 
     fun onActionMove(recordBtn: RecordButton, motionEvent: MotionEvent) {
-        if (!isPermissionGranted || fractionReached) {
+        if (!isPermissionGranted || fractionReached || isSwiped) {
             return
         }
 
         val time = System.currentTimeMillis() - startTime
+        if (slideToCancelLayout!!.x != 0f && slideToCancelLayout!!.x <= counterTime!!.right + cancelBounds) {
+            // if the time was less than one second then do not start basket animation
 
-        if (!isSwiped) {
-            //Swipe To Cancel
+            if (isLessThanOneSecond(time)) {
+                hideViews(true)
+                animationHelper!!.clearAlphaAnimation(false)
 
-            if (slideToCancelLayout!!.x != 0f && slideToCancelLayout!!.x <= counterTime!!.right + cancelBounds) {
-                //if the time was less than one second then do not start basket animation
-
-                if (isLessThanOneSecond(time)) {
-                    hideViews(true)
-                    animationHelper!!.clearAlphaAnimation(false)
-
-
-                    animationHelper!!.onAnimationEnd()
-                } else {
-                    hideViews(false)
-                    animationHelper!!.animateBasket(basketInitialY)
-                }
-
-                animationHelper!!.moveRecordButtonAndSlideToCancelBack(
-                    recordBtn,
-                    slideToCancelLayout!!,
-                    initialRecordButtonX,
-                    initialRecordButtonY,
-                    difX,
-                    isLockEnabled
-                )
-
-                counterTime!!.stop()
-                isSwiped = true
-
-
-                animationHelper!!.setStartRecorded(false)
-
-                if (recordListener != null) recordListener!!.onCancel()
+                animationHelper!!.onAnimationEnd()
             } else {
-                if (canMoveX(motionEvent)) {
-                    recordBtn.animate()
-                        .x(motionEvent.rawX)
-                        .setDuration(0)
-                        .start()
+                hideViews(false)
+                animationHelper!!.animateBasket(basketInitialY)
+            }
+
+            animationHelper!!.moveRecordButtonAndSlideToCancelBack(
+                recordBtn,
+                slideToCancelLayout!!,
+                initialRecordButtonX,
+                initialRecordButtonY,
+                difX,
+                isLockEnabled
+            )
+
+            counterTime!!.stop()
+            isSwiped = true
 
 
-                    if (difX == 0f) difX = (initialRecordButtonX - slideToCancelLayout!!.x)
+            animationHelper!!.setStartRecorded(false)
+
+            if (recordListener != null) recordListener!!.onCancel()
+        } else {
+            if (canMoveX(motionEvent)) {
+                recordBtn.animate()
+                    .x(motionEvent.rawX)
+                    .setDuration(0)
+                    .start()
 
 
-                    slideToCancelLayout!!.animate()
-                        .x(motionEvent.rawX - difX)
-                        .setDuration(0)
-                        .start()
-                }
+                if (difX == 0f) difX = (initialRecordButtonX - slideToCancelLayout!!.x)
 
-                /*
-                  if RecordLock was NOT inside the same parent as RecordButton
-                   animate.y() OR view.setY() will setY value INSIDE its parent
-                   we need a way to convert the inner value to outer value
-                   since motionEvent.getRawY() returns Y's location onScreen
-                   we had to get screen height and get the difference between motionEvent and screen height
-                 */
-                val newY =
-                    if (isLockInSameParent) motionEvent.rawY else motionEvent.rawY - recordButtonYInWindow
-                if (canMoveY(motionEvent, newY)) {
-                    recordBtn.animate()
-                        .y(newY)
-                        .setDuration(0)
-                        .start()
 
-                    val currentY = motionEvent.rawY
-                    val minY = recordLockYInWindow
-                    val maxY = recordButtonYInWindow
+                slideToCancelLayout!!.animate()
+                    .x(motionEvent.rawX - difX)
+                    .setDuration(0)
+                    .start()
+            }
 
-                    var fraction = (currentY - minY) / (maxY - minY)
-                    fraction = 1 - fraction
-                    currentYFraction = fraction
+            /*
+              if RecordLock was NOT inside the same parent as RecordButton
+               animate.y() OR view.setY() will setY value INSIDE its parent
+               we need a way to convert the inner value to outer value
+               since motionEvent.getRawY() returns Y's location onScreen
+               we had to get screen height and get the difference between motionEvent and screen height
+             */
+            val newY =
+                if (isLockInSameParent) motionEvent.rawY else motionEvent.rawY - recordButtonYInWindow
+            if (canMoveY(motionEvent, newY)) {
+                recordBtn.animate()
+                    .y(newY)
+                    .setDuration(0)
+                    .start()
 
-                    recordLockView!!.animateLock(fraction)
+                val currentY = motionEvent.rawY
+                val minY = recordLockYInWindow
+                val maxY = recordButtonYInWindow
 
-                    //convert fraction to scale
-                    //so instead of starting from 0 to 1, it will start from 1 to 0
-                    val scale = 1 - fraction + 1
-                    recordBtn.animate().scaleX(scale).scaleY(scale).setDuration(0).start()
-                }
+                var fraction = (currentY - minY) / (maxY - minY)
+                fraction = 1 - fraction
+                currentYFraction = fraction
+
+                recordLockView!!.animateLock(fraction)
+
+                //convert fraction to scale
+                //so instead of starting from 0 to 1, it will start from 1 to 0
+                val scale = 1 - fraction + 1
+                recordBtn.animate().scaleX(scale).scaleY(scale).setDuration(0).start()
             }
         }
     }
