@@ -13,7 +13,7 @@ import androidx.appcompat.widget.AppCompatImageView
 /**
  * Created by Devlomi on 13/12/2017.
  */
-class RecordButton : AppCompatImageView, OnTouchListener, View.OnClickListener {
+class RecordButton : AppCompatImageView, View.OnClickListener {
     private var scaleAnim: ScaleAnim? = null
     private var recordView: RecordView? = null
     var isListenForRecord: Boolean = true
@@ -69,7 +69,6 @@ class RecordButton : AppCompatImageView, OnTouchListener, View.OnClickListener {
             scaleAnim!!.setScaleUpTo(scaleUpTo)
         }
 
-        this.setOnTouchListener(this)
         this.setOnClickListener(this)
     }
 
@@ -78,22 +77,16 @@ class RecordButton : AppCompatImageView, OnTouchListener, View.OnClickListener {
         setClip(this)
     }
 
-    fun setScaleUpTo(scaleTo: Float) {
-        scaleAnim!!.setScaleUpTo(scaleTo)
-    }
-
-    fun setClip(v: View) {
-        if (v.getParent() == null) {
+    fun setClip(view: View) {
+        if (view.parent == null) {
             return
         }
-
-        if (v is ViewGroup) {
-            v.setClipChildren(false)
-            v.setClipToPadding(false)
+        if (view is ViewGroup) {
+            view.setClipChildren(false)
+            view.clipToPadding = false
         }
-
-        if (v.getParent() is View) {
-            setClip((v.getParent() as android.view.View?)!!)
+        (view.parent as? View)?.let {
+            setClip(it)
         }
     }
 
@@ -105,12 +98,12 @@ class RecordButton : AppCompatImageView, OnTouchListener, View.OnClickListener {
     }
 
 
-    override fun onTouch(v: View?, event: MotionEvent): Boolean {
+    override fun onTouchEvent(event: MotionEvent): Boolean {
         if (this.isListenForRecord) {
-            when (event.getAction()) {
-                MotionEvent.ACTION_DOWN -> recordView!!.onActionDown(v as RecordButton, event)
-                MotionEvent.ACTION_MOVE -> recordView!!.onActionMove(v as RecordButton, event)
-                MotionEvent.ACTION_UP -> recordView!!.onActionUp(v as RecordButton?)
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> recordView!!.onActionDown(this, event)
+                MotionEvent.ACTION_MOVE -> recordView!!.onActionMove(this, event)
+                MotionEvent.ACTION_UP -> recordView!!.onActionUp(this)
             }
         }
 
