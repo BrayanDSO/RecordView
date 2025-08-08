@@ -252,24 +252,4 @@ class RecordLockView : View {
         topLockDrawable!!.draw(canvas)
         bottomLockDrawable!!.draw(canvas)
     }
-
-    fun setDefaultCircleColor(defaultCircleColor: Int) {
-        this.defaultCircleColor = defaultCircleColor
-        invalidate()
-    }
-
-    fun setCircleLockedColor(circleLockedColor: Int) {
-        this.circleLockedColor = circleLockedColor
-        invalidate()
-    }
-
-    fun setLockColor(lockColor: Int) {
-        this.lockColor = lockColor
-        bottomLockDrawable!!.colorFilter = PorterDuffColorFilter(
-            lockColor,
-            PorterDuff.Mode.SRC_IN
-        )
-        topLockDrawable!!.colorFilter = PorterDuffColorFilter(lockColor, PorterDuff.Mode.SRC_IN)
-        invalidate()
-    }
 }
