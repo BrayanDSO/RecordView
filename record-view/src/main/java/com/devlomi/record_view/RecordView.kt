@@ -54,9 +54,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     private var animationHelper: AnimationHelper? = null
     private var isRecordButtonGrowingAnimationEnabled = true
     var isShimmerEffectEnabled: Boolean = true
-    private var timeLimit: Long = -1
-    private var runnable: Runnable? = null
-    private var handler: Handler? = null
     private var recordButton: RecordButton? = null
 
     private var canRecord = true
@@ -186,11 +183,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     }
 
     private fun cancelAndDeleteRecord() {
-        if (this.isTimeLimitValid) {
-            removeTimeLimitCallbacks()
-        }
-
-
         isSwiped = true
 
         animationHelper!!.setStartRecorded(false)
@@ -201,33 +193,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
 
         resetRecord(recordButton!!)
     }
-
-    private val isTimeLimitValid: Boolean
-        get() = timeLimit > 0
-
-    private fun initTimeLimitHandler() {
-        handler = Handler()
-        runnable = Runnable {
-            if (recordListener != null && !isSwiped) recordListener!!.onFinish(
-                elapsedTime,
-                true
-            )
-
-            removeTimeLimitCallbacks()
-
-            animationHelper!!.setStartRecorded(false)
-
-
-            if (!isSwiped) playSound(RECORD_FINISHED)
-
-
-            if (recordButton != null) {
-                resetRecord(recordButton!!)
-            }
-            isSwiped = true
-        }
-    }
-
 
     private fun hideViews(hideSmallMic: Boolean) {
         slideToCancelLayout!!.setVisibility(GONE)
@@ -286,11 +251,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
 
 
         if (recordListener != null) recordListener!!.onStart()
-
-        if (this.isTimeLimitValid) {
-            removeTimeLimitCallbacks()
-            handler!!.postDelayed(runnable!!, timeLimit)
-        }
 
         animationHelper!!.setStartRecorded(true)
         animationHelper!!.resetBasketAnimation()
@@ -384,10 +344,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
                 animationHelper!!.setStartRecorded(false)
 
                 if (recordListener != null) recordListener!!.onCancel()
-
-                if (this.isTimeLimitValid) {
-                    removeTimeLimitCallbacks()
-                }
             } else {
                 if (canMoveX(motionEvent)) {
                     recordBtn.animate()
@@ -484,16 +440,11 @@ class RecordView : RelativeLayout, RecordLockViewListener {
 
         if (!isLessThanSecondAllowed && isLessThanOneSecond(elapsedTime) && !isSwiped) {
             if (recordListener != null) recordListener!!.onLessThanSecond()
-
-            removeTimeLimitCallbacks()
             animationHelper!!.setStartRecorded(false)
 
             playSound(RECORD_ERROR)
         } else {
             if (recordListener != null && !isSwiped) recordListener!!.onFinish(elapsedTime, false)
-
-            removeTimeLimitCallbacks()
-
             animationHelper!!.setStartRecorded(false)
 
 
@@ -564,12 +515,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
         cancelTextView!!.visibility = GONE
         recordBtn.isListenForRecord = true
         recordBtn.setInLockMode(false)
-    }
-
-    private fun removeTimeLimitCallbacks() {
-        if (this.isTimeLimitValid) {
-            handler!!.removeCallbacks(runnable!!)
-        }
     }
 
 
@@ -674,19 +619,6 @@ class RecordView : RelativeLayout, RecordLockViewListener {
     fun setRecordButtonGrowingAnimationEnabled(recordButtonGrowingAnimationEnabled: Boolean) {
         isRecordButtonGrowingAnimationEnabled = recordButtonGrowingAnimationEnabled
         animationHelper!!.setRecordButtonGrowingAnimationEnabled(recordButtonGrowingAnimationEnabled)
-    }
-
-    fun getTimeLimit(): Long {
-        return timeLimit
-    }
-
-    fun setTimeLimit(timeLimit: Long) {
-        this.timeLimit = timeLimit
-
-        if (handler != null && runnable != null) {
-            removeTimeLimitCallbacks()
-        }
-        initTimeLimitHandler()
     }
 
     fun setTrashIconColor(color: Int) {
