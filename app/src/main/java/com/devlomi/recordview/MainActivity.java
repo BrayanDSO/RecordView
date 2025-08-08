@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
         recordView.setSlideToCancelText("Slide To Cancel");
 
 
-        recordView.setCustomSounds(R.raw.record_start, R.raw.record_finished, 0);
+        // recordView.setCustomSounds(R.raw.record_start, R.raw.record_finished, 0);
 
 
         recordView.setOnRecordListener(new OnRecordListener() {

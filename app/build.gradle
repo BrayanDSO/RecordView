@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
+    namespace = "com.devlomi.recordview"
     lintOptions {
         abortOnError false
     }
