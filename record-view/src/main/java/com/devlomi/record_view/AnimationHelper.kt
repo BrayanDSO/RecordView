@@ -20,14 +20,12 @@ import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import androidx.vectordrawable.graphics.drawable.AnimatorInflaterCompat
 
 class AnimationHelper(
-    context: Context,
-    basketImg: ImageView,
-    smallBlinkingMic: ImageView?
-) {
-    private val context: Context?
-    private val animatedVectorDrawable: AnimatedVectorDrawableCompat?
-    private val basketImg: ImageView?
+    private val context: Context,
+    private val basketImg: ImageView,
     private val smallBlinkingMic: ImageView?
+) {
+    private val animatedVectorDrawable: AnimatedVectorDrawableCompat =
+        AnimatedVectorDrawableCompat.create(context, R.drawable.recv_basket_animated)!!
     private var alphaAnimation: AlphaAnimation? = null
     private var onBasketAnimationEndListener: OnBasketAnimationEnd? = null
     private var isBasketAnimating = false
@@ -39,15 +37,6 @@ class AnimationHelper(
     private var translateAnimation2: TranslateAnimation? = null
     private var handler1: Handler? = null
     private var handler2: Handler? = null
-
-
-    init {
-        this.context = context
-        this.smallBlinkingMic = smallBlinkingMic
-        this.basketImg = basketImg
-        animatedVectorDrawable =
-            AnimatedVectorDrawableCompat.create(context, R.drawable.recv_basket_animated)
-    }
 
     @SuppressLint("RestrictedApi")
     fun animateBasket(basketInitialY: Float) {
@@ -77,7 +66,7 @@ class AnimationHelper(
 
 
         micAnimation!!.start()
-        basketImg!!.setImageDrawable(animatedVectorDrawable)
+        basketImg.setImageDrawable(animatedVectorDrawable)
 
         handler1 = Handler()
         handler1!!.postDelayed({
@@ -90,7 +79,7 @@ class AnimationHelper(
             }
 
             override fun onAnimationEnd(animation: Animation?) {
-                animatedVectorDrawable!!.start()
+                animatedVectorDrawable.start()
                 handler2 = Handler()
                 handler2!!.postDelayed({
                     basketImg.startAnimation(translateAnimation2)
@@ -138,7 +127,7 @@ class AnimationHelper(
             micAnimation!!.cancel()
 
             smallBlinkingMic!!.clearAnimation()
-            basketImg!!.clearAnimation()
+            basketImg.clearAnimation()
 
 
             if (handler1 != null) handler1!!.removeCallbacksAndMessages(null)
