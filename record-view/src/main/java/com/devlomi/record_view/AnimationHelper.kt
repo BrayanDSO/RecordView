@@ -48,10 +48,6 @@ class AnimationHelper(
             AnimatedVectorDrawableCompat.create(context, R.drawable.recv_basket_animated)
     }
 
-    fun setTrashIconColor(color: Int) {
-        animatedVectorDrawable!!.setColorFilter(color, PorterDuff.Mode.SRC_IN)
-    }
-
     @SuppressLint("RestrictedApi")
     fun animateBasket(basketInitialY: Float) {
         isBasketAnimating = true
@@ -60,8 +56,8 @@ class AnimationHelper(
 
         //save initial x,y values for mic icon
         if (micX == 0f) {
-            micX = smallBlinkingMic!!.getX()
-            micY = smallBlinkingMic.getY()
+            micX = smallBlinkingMic!!.x
+            micY = smallBlinkingMic.y
         }
 
 
@@ -83,11 +79,9 @@ class AnimationHelper(
         basketImg!!.setImageDrawable(animatedVectorDrawable)
 
         handler1 = Handler()
-        handler1!!.postDelayed(object : Runnable {
-            override fun run() {
-                basketImg.setVisibility(View.VISIBLE)
-                basketImg.startAnimation(translateAnimation1)
-            }
+        handler1!!.postDelayed({
+            basketImg.setVisibility(View.VISIBLE)
+            basketImg.startAnimation(translateAnimation1)
         }, 350)
 
         translateAnimation1!!.setAnimationListener(object : AnimationListener {
@@ -97,12 +91,10 @@ class AnimationHelper(
             override fun onAnimationEnd(animation: Animation?) {
                 animatedVectorDrawable!!.start()
                 handler2 = Handler()
-                handler2!!.postDelayed(object : Runnable {
-                    override fun run() {
-                        basketImg.startAnimation(translateAnimation2)
-                        smallBlinkingMic!!.setVisibility(View.INVISIBLE)
-                        basketImg.setVisibility(View.INVISIBLE)
-                    }
+                handler2!!.postDelayed({
+                    basketImg.startAnimation(translateAnimation2)
+                    smallBlinkingMic!!.setVisibility(View.INVISIBLE)
+                    basketImg.setVisibility(View.INVISIBLE)
                 }, 450)
             }
 
@@ -152,8 +144,8 @@ class AnimationHelper(
             if (handler2 != null) handler2!!.removeCallbacksAndMessages(null)
 
             basketImg.setVisibility(View.INVISIBLE)
-            smallBlinkingMic.setX(micX)
-            smallBlinkingMic.setY(micY)
+            smallBlinkingMic.x = micX
+            smallBlinkingMic.y = micY
             smallBlinkingMic.setVisibility(View.GONE)
 
             isBasketAnimating = false
@@ -176,7 +168,7 @@ class AnimationHelper(
     fun animateSmallMicAlpha() {
         alphaAnimation = AlphaAnimation(0.0f, 1.0f)
         alphaAnimation!!.setDuration(500)
-        alphaAnimation!!.setRepeatMode(Animation.REVERSE)
+        alphaAnimation!!.repeatMode = Animation.REVERSE
         alphaAnimation!!.setRepeatCount(Animation.INFINITE)
         smallBlinkingMic!!.startAnimation(alphaAnimation)
     }
@@ -192,16 +184,14 @@ class AnimationHelper(
         val positionAnimator =
             ValueAnimator.ofFloat(recordBtn.getX(), initialX)
 
-        positionAnimator.setInterpolator(AccelerateDecelerateInterpolator())
-        positionAnimator.addUpdateListener(object : AnimatorUpdateListener {
-            override fun onAnimationUpdate(animation: ValueAnimator) {
-                val x = animation.getAnimatedValue() as Float
-                recordBtn.setX(x)
-                if (setY) {
-                    recordBtn.setY(initialY)
-                }
+        positionAnimator.interpolator = AccelerateDecelerateInterpolator()
+        positionAnimator.addUpdateListener { animation ->
+            val x = animation.getAnimatedValue() as Float
+            recordBtn.x = x
+            if (setY) {
+                recordBtn.y = initialY
             }
-        })
+        }
 
         recordBtn.stopScale()
         positionAnimator.setDuration(0)
@@ -220,8 +210,8 @@ class AnimationHelper(
 
     fun resetSmallMic() {
         smallBlinkingMic!!.setAlpha(1.0f)
-        smallBlinkingMic.setScaleX(1.0f)
-        smallBlinkingMic.setScaleY(1.0f)
+        smallBlinkingMic.scaleX = 1.0f
+        smallBlinkingMic.scaleY = 1.0f
     }
 
     fun setOnBasketAnimationEndListener(onBasketAnimationEndListener: OnBasketAnimationEnd?) {
